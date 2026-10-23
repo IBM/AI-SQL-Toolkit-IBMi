@@ -1,5 +1,7 @@
 -- ## watsonx main functionality
-
+-- ### Usage note regarding model gateway
+-- IBM Cloud data platform now has a model gateway which should be generally preferred over the classic watsonx.ai approach enabled here.
+-- For more information see https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-model-gateway-overview.html?context=wx&audience=wdp&locale=en
 
 -- #### **Function:** `watsonx_generate`
 
