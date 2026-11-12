@@ -17,14 +17,6 @@ class MockClientTest {
 
     private static final ObjectMapper s_mapper = new ObjectMapper();
 
-    @Test
-    void headerLookupIgnoresCase() throws IOException {
-        final JsonNode request = s_mapper.readTree("{\"headers\": {\"Content-type\": \"application/json\", \"Authorization\": \"Bearer ****\"}}");
-        assertEquals("application/json", MockClient.header(request, "Content-Type"));
-        assertEquals("Bearer ****", MockClient.header(request, "authorization"));
-        assertNull(MockClient.header(request, "Accept"));
-    }
-
     /**
      * Form bodies decode the way a receiving service would, including '+' as a space.
      *
@@ -38,6 +30,14 @@ class MockClientTest {
         assertEquals(" 15551234567", form.get("To"));
         assertEquals("555", form.get("From"));
         assertEquals("Hello there!", form.get("Body"));
+    }
+
+    @Test
+    void headerLookupIgnoresCase() throws IOException {
+        final JsonNode request = s_mapper.readTree("{\"headers\": {\"Content-type\": \"application/json\", \"Authorization\": \"Bearer ****\"}}");
+        assertEquals("application/json", MockClient.header(request, "Content-Type"));
+        assertEquals("Bearer ****", MockClient.header(request, "authorization"));
+        assertNull(MockClient.header(request, "Accept"));
     }
 
     @Test

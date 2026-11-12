@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+
 import com.ibm.dbsdk.mock.handlers.AdminHandler;
 import com.ibm.dbsdk.mock.handlers.KafkaHandler;
 import com.ibm.dbsdk.mock.handlers.OllamaHandler;
@@ -12,8 +15,6 @@ import com.ibm.dbsdk.mock.handlers.ServiceHandler;
 import com.ibm.dbsdk.mock.handlers.SlackHandler;
 import com.ibm.dbsdk.mock.handlers.TwilioHandler;
 import com.ibm.dbsdk.mock.handlers.WatsonxHandler;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * Single entry point for all listeners. Routes by URL path so that one port can serve every service the toolkit talks to (their URL spaces do not overlap).
@@ -21,12 +22,19 @@ import com.sun.net.httpserver.HttpHandler;
 final class Router implements HttpHandler {
 
     private final AdminHandler m_admin;
+
     private final KafkaHandler m_kafka;
+
     private final OllamaHandler m_ollama;
+
     private final OpenAiHandler m_openAi;
+
     private final SlackHandler m_slack;
+
     private final MockState m_state;
+
     private final TwilioHandler m_twilio;
+
     private final WatsonxHandler m_watsonx;
 
     /**
@@ -44,6 +52,31 @@ final class Router implements HttpHandler {
         m_slack = new SlackHandler(_state);
         m_twilio = new TwilioHandler(_state);
         m_watsonx = new WatsonxHandler(_state);
+    }
+
+    /**
+     * Route a call to its handler, or answer 404 if no endpoint matches.
+     *
+     * @param _call
+     *            the call to dispatch
+     * @throws IOException
+     *             if the response cannot be written
+     */
+    private void dispatch(final HttpCall _call) throws IOException {
+        final ServiceHandler handler = route(_call.getPath());
+        if (null == handler) {
+            _call.setServiceName("unknown");
+            final ObjectNode err = Json.object();
+            err.put("error", "No mock endpoint matches " + _call.getMethod() + " " + Redactor.redactPath(_call.getPath()));
+            err.put("hint", "GET /mock/health lists the supported endpoints");
+            _call.sendJson(404, err);
+            return;
+        }
+        _call.setServiceName(handler.getServiceName());
+        handler.handle(_call);
+        if (!_call.hasResponded()) {
+            sendInternalError(_call, "Mock handler produced no response");
+        }
     }
 
     /**
@@ -76,31 +109,6 @@ final class Router implements HttpHandler {
             final long elapsed = System.currentTimeMillis() - start;
             MockLog.info(String.format("%-8s %3d %-6s %s (%d ms)", call.getServiceName(), Integer.valueOf(call.getResponseStatus()), call.getMethod(), Redactor.redactPath(call.getRawUri()),
                 Long.valueOf(elapsed)));
-        }
-    }
-
-    /**
-     * Route a call to its handler, or answer 404 if no endpoint matches.
-     *
-     * @param _call
-     *            the call to dispatch
-     * @throws IOException
-     *             if the response cannot be written
-     */
-    private void dispatch(final HttpCall _call) throws IOException {
-        final ServiceHandler handler = route(_call.getPath());
-        if (null == handler) {
-            _call.setServiceName("unknown");
-            final ObjectNode err = Json.object();
-            err.put("error", "No mock endpoint matches " + _call.getMethod() + " " + Redactor.redactPath(_call.getPath()));
-            err.put("hint", "GET /mock/health lists the supported endpoints");
-            _call.sendJson(404, err);
-            return;
-        }
-        _call.setServiceName(handler.getServiceName());
-        handler.handle(_call);
-        if (!_call.hasResponded()) {
-            sendInternalError(_call, "Mock handler produced no response");
         }
     }
 

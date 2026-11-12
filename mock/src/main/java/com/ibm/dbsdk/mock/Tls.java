@@ -171,14 +171,15 @@ final class Tls {
         pb.environment().put(PASSWORD_ENV, _password);
         pb.redirectErrorStream(true);
         final Process p = pb.start();
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try (final InputStream in = p.getInputStream()) {
+        final String output;
+        try (final InputStream in = p.getInputStream(); final ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
             final byte[] buf = new byte[4096];
             int n = in.read(buf);
             while (-1 != n) {
-                output.write(buf, 0, n);
+                bytes.write(buf, 0, n);
                 n = in.read(buf);
             }
+            output = new String(bytes.toByteArray(), StandardCharsets.UTF_8);
         }
         try {
             if (!p.waitFor(60, TimeUnit.SECONDS)) {
@@ -190,7 +191,7 @@ final class Tls {
             throw new IOException("Interrupted while running keytool", _e);
         }
         if (0 != p.exitValue()) {
-            throw new IOException("keytool failed (exit " + p.exitValue() + "): " + new String(output.toByteArray(), StandardCharsets.UTF_8) + System.lineSeparator()
+            throw new IOException("keytool failed (exit " + p.exitValue() + "): " + output + System.lineSeparator()
                 + "Provide a keystore with --keystore instead.");
         }
     }

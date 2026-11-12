@@ -81,26 +81,6 @@ class MockServerTest {
             assertTrue(System.currentTimeMillis() - start >= 250, "delay directive should slow the response");
         }
 
-        /**
-         * POST /mock/shutdown stops the server.
-         *
-         * @throws Exception
-         *             if the server or a request fails
-         */
-        @Test
-        void shutdownEndpointStopsServer() throws Exception {
-            final MockServer s = new MockServer(new MockConfig().setBindAddress("127.0.0.1").addHttpPort(0), null);
-            s.start();
-            final TestClient c = new TestClient("http://127.0.0.1:" + s.httpPorts().get(0));
-            assertEquals(true, c.request("POST", "/mock/shutdown", "", null).json().get("shutdown").asBoolean());
-            final long deadline = System.currentTimeMillis() + 10000;
-            while (!s.httpPorts().isEmpty() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(50);
-            }
-            assertTrue(s.httpPorts().isEmpty(), "server should have stopped");
-            s.awaitStop();
-        }
-
         @Test
         void healthAndUnknownRoutes() throws IOException {
             assertEquals("UP", m_client.get("/mock/health").json().get("status").asText());
@@ -147,6 +127,26 @@ class MockServerTest {
             final String beforeClear = m_client.get("/mock/requests").getBody();
             assertEquals(3, m_client.delete("/mock/requests").json().get("cleared").asInt(), beforeClear);
             assertEquals(0, m_client.get("/mock/requests").json().size());
+        }
+
+        /**
+         * POST /mock/shutdown stops the server.
+         *
+         * @throws Exception
+         *             if the server or a request fails
+         */
+        @Test
+        void shutdownEndpointStopsServer() throws Exception {
+            final MockServer s = new MockServer(new MockConfig().setBindAddress("127.0.0.1").addHttpPort(0), null);
+            s.start();
+            final TestClient c = new TestClient("http://127.0.0.1:" + s.httpPorts().get(0));
+            assertEquals(true, c.request("POST", "/mock/shutdown", "", null).json().get("shutdown").asBoolean());
+            final long deadline = System.currentTimeMillis() + 10000;
+            while (!s.httpPorts().isEmpty() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertTrue(s.httpPorts().isEmpty(), "server should have stopped");
+            s.awaitStop();
         }
     }
 

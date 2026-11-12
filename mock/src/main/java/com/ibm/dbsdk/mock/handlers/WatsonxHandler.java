@@ -25,6 +25,7 @@ import com.ibm.dbsdk.mock.TextGen;
 public final class WatsonxHandler extends ServiceHandler {
 
     static final String APIKEY_GRANT = "urn:ibm:params:oauth:grant-type:apikey";
+
     /** watsonx's own default when {@code parameters.max_new_tokens} is not given. */
     private static final int DEFAULT_MAX_NEW_TOKENS = 20;
 
@@ -101,21 +102,6 @@ public final class WatsonxHandler extends ServiceHandler {
         err.put("trace", randomHex(32));
         err.put("status_code", _status);
         _call.sendJson(_status, err);
-    }
-
-    /**
-     * Without a configured key every non-empty key is accepted, except ones that are obviously meant to be invalid (the toolkit's own tests use "-BAD").
-     *
-     * @param _apiKey
-     *            the key presented by the client
-     * @return true if IAM should issue a token for it
-     */
-    private boolean acceptsApiKey(final String _apiKey) {
-        if (null != m_config.getWatsonxApiKey()) {
-            return m_config.getWatsonxApiKey().equals(_apiKey);
-        }
-        final String key = _apiKey.trim().toLowerCase(Locale.ROOT);
-        return !(key.startsWith("bad") || key.startsWith("-bad") || key.startsWith("invalid"));
     }
 
     /**
@@ -205,6 +191,21 @@ public final class WatsonxHandler extends ServiceHandler {
         } else {
             wxError(_call, 404, "not_found", "The mock does not implement " + path);
         }
+    }
+
+    /**
+     * Without a configured key every non-empty key is accepted, except ones that are obviously meant to be invalid (the toolkit's own tests use "-BAD").
+     *
+     * @param _apiKey
+     *            the key presented by the client
+     * @return true if IAM should issue a token for it
+     */
+    private boolean isApiKeyAccepted(final String _apiKey) {
+        if (null != m_config.getWatsonxApiKey()) {
+            return m_config.getWatsonxApiKey().equals(_apiKey);
+        }
+        final String key = _apiKey.trim().toLowerCase(Locale.ROOT);
+        return !(key.startsWith("bad") || key.startsWith("-bad") || key.startsWith("invalid"));
     }
 
     /**
@@ -329,7 +330,7 @@ public final class WatsonxHandler extends ServiceHandler {
             iamError(_call, 400, "BXNIM0109E", "Property grant_type has unsupported value: " + grant);
             return;
         }
-        if (isBlank(apiKey) || !acceptsApiKey(apiKey)) {
+        if (isBlank(apiKey) || !isApiKeyAccepted(apiKey)) {
             iamError(_call, 400, "BXNIM0415E", "Provided API key could not be found.");
             return;
         }

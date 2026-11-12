@@ -16,8 +16,11 @@ import java.util.Set;
 public final class HarnessConfig {
 
     public static final int DEFAULT_MAPEPIRE_PORT = 8076;
+
     public static final int DEFAULT_MOCK_PORT = 8888;
+
     public static final int DEFAULT_QUERY_TIMEOUT_SECONDS = 120;
+
     /** Tag for tests that fail until an open toolkit bug is fixed. */
     public static final String TAG_KNOWN_ISSUE = "known-issue";
 
@@ -25,20 +28,35 @@ public final class HarnessConfig {
         "--query-timeout", "--skip", "--only", "--report-dir"));
 
     private boolean m_help = false;
+
     private String m_host = "localhost";
+
     private boolean m_insecure = false;
+
     private boolean m_list = false;
+
     private String m_mockHost = "localhost";
+
     private int m_mockPort = DEFAULT_MOCK_PORT;
+
     private String m_mockUrl = null;
+
     private final Set<String> m_onlyTags = new LinkedHashSet<String>();
+
     private String m_password = null;
+
     private int m_port = DEFAULT_MAPEPIRE_PORT;
+
     private int m_queryTimeoutSeconds = DEFAULT_QUERY_TIMEOUT_SECONDS;
+
     private String m_reportDir = null;
+
     private final Set<String> m_skipTags = new LinkedHashSet<String>();
+
     private String m_user = null;
+
     private boolean m_verbose = false;
+
     private boolean m_version = false;
 
     /**
@@ -81,52 +99,6 @@ public final class HarnessConfig {
             i++;
         }
         return config;
-    }
-
-    /**
-     * @return the command-line help text
-     */
-    public static String usage() {
-        //@formatter:off
-        return String.join(System.lineSeparator(),
-            "Usage: java -jar dbsdk-test-harness-<version>-jar-with-dependencies.jar [options]",
-            "",
-            "Runs the dbsdk_v1 SQL toolkit test suite over the Mapepire JDBC driver. External services",
-            "are provided by the dbsdk mock server (see ../mock), which the IBM i must be able to reach.",
-            "",
-            "Connection options:",
-            "  -h, --host <host>          Mapepire server host (default: localhost).",
-            "  -P, --port <port>          Mapepire server port (default: " + DEFAULT_MAPEPIRE_PORT + ").",
-            "  -u, --user <user>          IBM i user profile. Prompted for if omitted",
-            "                             (or set MAPEPIRE_USER).",
-            "      --password <password>  Password. Prompted for if omitted (or set MAPEPIRE_PASSWORD).",
-            "                             Prefer the prompt or the variable: command-line arguments",
-            "                             are visible to other users of the machine.",
-            "      --insecure             Do not verify the Mapepire server's TLS certificate",
-            "                             (needed for the default self-signed certificate).",
-            "      --query-timeout <s>    Per-statement timeout in seconds (default " + DEFAULT_QUERY_TIMEOUT_SECONDS + ").",
-            "",
-            "Mock server options:",
-            "      --mock-host <host>     Mock server host as seen FROM THE IBM i (default: localhost).",
-            "      --mock-port <port>     Mock server HTTP port (default: " + DEFAULT_MOCK_PORT + ").",
-            "      --mock-url <url>       Mock server URL as seen from this machine, used to inspect",
-            "                             what the toolkit sent (default: http://<mock-host>:<mock-port>).",
-            "",
-            "Test selection:",
-            "      --skip <tags>          Skip tests with these tags, e.g. --skip conf,pase,known-issue",
-            "      --only <tags>          Run only tests with these tags, e.g. --only openai",
-            "      --list                 List the tests that would run, then exit (no connection).",
-            "",
-            "Output options:",
-            "      --report-dir <dir>     Also write JUnit XML reports to this directory.",
-            "  -v, --verbose              Show stack traces and extra detail.",
-            "      --version              Print the version and exit.",
-            "  -?, --help                 Print this help and exit.",
-            "",
-            "Tags: json, conf, ollama, openai, kafka, slack, twilio, watsonx, pase, known-issue",
-            "",
-            "Exit status: 0 all tests passed, 1 a test failed, 2 usage or connection error.");
-        //@formatter:on
     }
 
     /**
@@ -188,6 +160,52 @@ public final class HarnessConfig {
             throw new IllegalArgumentException(_option + " requires a positive integer, got: " + _value);
         }
         return value;
+    }
+
+    /**
+     * @return the command-line help text
+     */
+    public static String usage() {
+        //@formatter:off
+        return String.join(System.lineSeparator(),
+            "Usage: java -jar dbsdk-test-harness-<version>-jar-with-dependencies.jar [options]",
+            "",
+            "Runs the dbsdk_v1 SQL toolkit test suite over the Mapepire JDBC driver. External services",
+            "are provided by the dbsdk mock server (see ../mock), which the IBM i must be able to reach.",
+            "",
+            "Connection options:",
+            "  -h, --host <host>          Mapepire server host (default: localhost).",
+            "  -P, --port <port>          Mapepire server port (default: " + DEFAULT_MAPEPIRE_PORT + ").",
+            "  -u, --user <user>          IBM i user profile. Prompted for if omitted",
+            "                             (or set MAPEPIRE_USER).",
+            "      --password <password>  Password. Prompted for if omitted (or set MAPEPIRE_PASSWORD).",
+            "                             Prefer the prompt or the variable: command-line arguments",
+            "                             are visible to other users of the machine.",
+            "      --insecure             Do not verify the Mapepire server's TLS certificate",
+            "                             (needed for the default self-signed certificate).",
+            "      --query-timeout <s>    Per-statement timeout in seconds (default " + DEFAULT_QUERY_TIMEOUT_SECONDS + ").",
+            "",
+            "Mock server options:",
+            "      --mock-host <host>     Mock server host as seen FROM THE IBM i (default: localhost).",
+            "      --mock-port <port>     Mock server HTTP port (default: " + DEFAULT_MOCK_PORT + ").",
+            "      --mock-url <url>       Mock server URL as seen from this machine, used to inspect",
+            "                             what the toolkit sent (default: http://<mock-host>:<mock-port>).",
+            "",
+            "Test selection:",
+            "      --skip <tags>          Skip tests with these tags, e.g. --skip conf,pase,known-issue",
+            "      --only <tags>          Run only tests with these tags, e.g. --only openai",
+            "      --list                 List the tests that would run, then exit (no connection).",
+            "",
+            "Output options:",
+            "      --report-dir <dir>     Also write JUnit XML reports to this directory.",
+            "  -v, --verbose              Show stack traces and extra detail.",
+            "      --version              Print the version and exit.",
+            "  -?, --help                 Print this help and exit.",
+            "",
+            "Tags: json, conf, ollama, openai, kafka, slack, twilio, watsonx, pase, known-issue",
+            "",
+            "Exit status: 0 all tests passed, 1 a test failed, 2 usage or connection error.");
+        //@formatter:on
     }
 
     /**

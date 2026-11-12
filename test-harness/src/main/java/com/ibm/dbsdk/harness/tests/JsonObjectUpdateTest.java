@@ -75,6 +75,12 @@ final class JsonObjectUpdateTest extends ToolkitTest {
         assertEquals(json(expected), json(clobValue("dbsdk_v1.json_object_update(json_object('occupation': 'Dev'), '{\"name\": \"John\", \"age\": 30}')")));
     }
 
+    @Test
+    @DisplayName("merges objects containing arrays")
+    void mergeArrays() throws SQLException {
+        assertMerge("{\"numbers\": [1, 2, 3]}", "{\"letters\": [\"a\", \"b\", \"c\"]}", "{\"numbers\": [1, 2, 3], \"letters\": [\"a\", \"b\", \"c\"]}");
+    }
+
     /**
      * JSON booleans survive a merge, including ones built by JSON_OBJECT from BOOLEAN values (the BOOLEAN part needs a Db2 for i release with the BOOLEAN type).
      *
@@ -93,12 +99,6 @@ final class JsonObjectUpdateTest extends ToolkitTest {
             return;
         }
         assertEquals(json("{\"string_true\": \"true\", \"boolean_true\": true, \"boolean_false\": false}"), json(merged), "merged: " + merged);
-    }
-
-    @Test
-    @DisplayName("merges objects containing arrays")
-    void mergeArrays() throws SQLException {
-        assertMerge("{\"numbers\": [1, 2, 3]}", "{\"letters\": [\"a\", \"b\", \"c\"]}", "{\"numbers\": [1, 2, 3], \"letters\": [\"a\", \"b\", \"c\"]}");
     }
 
     @Test

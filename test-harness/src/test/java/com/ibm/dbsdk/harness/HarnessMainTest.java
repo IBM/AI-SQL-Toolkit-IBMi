@@ -41,6 +41,11 @@ class HarnessMainTest {
         return d;
     }
 
+    @Test
+    void badOptionExitsTwo() {
+        assertEquals(HarnessMain.EXIT_USAGE, HarnessMain.run(new String[] { "--bogus" }));
+    }
+
     /**
      * By default every suite is discovered.
      */
@@ -52,6 +57,12 @@ class HarnessMainTest {
         for (final String tag : new String[] { "json", "conf", "ollama", "openai", "kafka", "slack", "twilio", "watsonx", "pase", "known-issue" }) {
             assertTrue(d.m_tags.contains(tag), "no tests tagged " + tag);
         }
+    }
+
+    @Test
+    void helpAndListExitZero() {
+        assertEquals(HarnessMain.EXIT_OK, HarnessMain.run(new String[] { "--help" }));
+        assertEquals(HarnessMain.EXIT_OK, HarnessMain.run(new String[] { "--list", "--only", "json" }));
     }
 
     /**
@@ -70,17 +81,6 @@ class HarnessMainTest {
     @Test
     void skipKnownIssuesRemovesThem() {
         assertFalse(discover("--skip", "known-issue").m_tags.contains("known-issue"));
-    }
-
-    @Test
-    void helpAndListExitZero() {
-        assertEquals(HarnessMain.EXIT_OK, HarnessMain.run(new String[] { "--help" }));
-        assertEquals(HarnessMain.EXIT_OK, HarnessMain.run(new String[] { "--list", "--only", "json" }));
-    }
-
-    @Test
-    void badOptionExitsTwo() {
-        assertEquals(HarnessMain.EXIT_USAGE, HarnessMain.run(new String[] { "--bogus" }));
     }
 
     /**

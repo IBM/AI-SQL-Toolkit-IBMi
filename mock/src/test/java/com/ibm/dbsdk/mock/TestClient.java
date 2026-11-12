@@ -65,8 +65,7 @@ final class TestClient {
         if (null == _in) {
             return "";
         }
-        try (final InputStream in = _in) {
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (final InputStream in = _in; final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             final byte[] buf = new byte[4096];
             int n = in.read(buf);
             while (-1 != n) {

@@ -114,7 +114,7 @@ public final class OllamaHandler extends ServiceHandler {
         }
 
         final TextGen.Result result = TextGen.generate("ollama", model, prompt, directives, Json.integer(body.get("options"), "num_predict"));
-        final boolean stream = !body.has("stream") || Json.bool(body, "stream");
+        final boolean stream = !body.has("stream") || Json.isTrue(body, "stream");
         if (stream && !directives.isMalformed()) {
             streamResponse(_call, model, prompt, result);
             return;

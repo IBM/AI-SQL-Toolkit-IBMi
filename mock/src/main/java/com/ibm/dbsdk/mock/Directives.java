@@ -21,12 +21,17 @@ public final class Directives {
     private static final long MAX_DELAY_MS = 10L * 60L * 1000L;
 
     private static final Pattern s_directivePattern = Pattern.compile("\\[\\[mock:([A-Za-z_-]+)(?:=(.*?))?\\]\\]", Pattern.DOTALL);
+
     private static final Directives s_none = new Directives(null, 0, null, false, false);
 
     private final long m_delayMs;
+
     private final boolean m_malformed;
+
     private final boolean m_recordError;
+
     private final String m_reply;
+
     private final Integer m_status;
 
     /**
@@ -91,20 +96,6 @@ public final class Directives {
     }
 
     /**
-     * Remove all directives from a text.
-     *
-     * @param _text
-     *            the text; may be null
-     * @return the text without directives, trimmed, or null if the input was null
-     */
-    public static String strip(final String _text) {
-        if (null == _text) {
-            return null;
-        }
-        return s_directivePattern.matcher(_text).replaceAll("").trim();
-    }
-
-    /**
      * Parse a delay directive value, clamped to the allowed range.
      *
      * @param _value
@@ -143,6 +134,20 @@ public final class Directives {
         }
         MockLog.warn("Ignoring [[mock:status=" + _value + "]]: not between 100 and 599", null);
         return _current;
+    }
+
+    /**
+     * Remove all directives from a text.
+     *
+     * @param _text
+     *            the text; may be null
+     * @return the text without directives, trimmed, or null if the input was null
+     */
+    public static String strip(final String _text) {
+        if (null == _text) {
+            return null;
+        }
+        return s_directivePattern.matcher(_text).replaceAll("").trim();
     }
 
     /**

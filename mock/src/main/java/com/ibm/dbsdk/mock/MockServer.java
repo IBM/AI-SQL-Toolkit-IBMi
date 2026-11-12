@@ -27,11 +27,17 @@ public final class MockServer {
     private static final int BACKLOG = 128;
 
     private final MockConfig m_config;
+
     private ExecutorService m_executor = null;
+
     private final List<HttpServer> m_httpServers = new ArrayList<HttpServer>();
+
     private final List<HttpsServer> m_httpsServers = new ArrayList<HttpsServer>();
+
     private final PrintStream m_log;
+
     private final MockState m_state;
+
     private final CountDownLatch m_stopped = new CountDownLatch(1);
 
     /**
@@ -103,6 +109,15 @@ public final class MockServer {
     }
 
     /**
+     * @return the implementation version from the jar manifest, or "dev" when run from classes
+     */
+    public static String version() {
+        final Package pkg = MockServer.class.getPackage();
+        final String version = null == pkg ? null : pkg.getImplementationVersion();
+        return null == version ? "dev" : version;
+    }
+
+    /**
      * Block until the server has been stopped, by {@link #stop()}, {@code POST /mock/shutdown}, or JVM shutdown.
      */
     public void awaitStop() {
@@ -112,15 +127,6 @@ public final class MockServer {
             MockLog.info("Interrupted while waiting for the server to stop");
             Thread.currentThread().interrupt();
         }
-    }
-
-    /**
-     * @return the implementation version from the jar manifest, or "dev" when run from classes
-     */
-    public static String version() {
-        final Package pkg = MockServer.class.getPackage();
-        final String version = null == pkg ? null : pkg.getImplementationVersion();
-        return null == version ? "dev" : version;
     }
 
     public MockState getState() {
@@ -147,6 +153,21 @@ public final class MockServer {
             ports.add(Integer.valueOf(s.getAddress().getPort()));
         }
         return ports;
+    }
+
+    /**
+     * Log the startup summary. Credentials from the configuration are deliberately not included.
+     */
+    private void logBanner() {
+        MockLog.info("dbsdk-mock-server " + version() + " started");
+        for (final Integer p : httpPorts()) {
+            MockLog.info("  HTTP  listening on " + m_config.getBindAddress() + ":" + p);
+        }
+        for (final Integer p : httpsPorts()) {
+            MockLog.info("  HTTPS listening on " + m_config.getBindAddress() + ":" + p);
+        }
+        MockLog.info("  OpenAI flavor: " + m_config.getOpenAiFlavor().name().toLowerCase(Locale.ROOT) + ", token TTL: " + m_config.getTokenTtlSeconds() + "s");
+        MockLog.info("  GET /mock/health for the endpoint catalogue. Press Ctrl+C to stop.");
     }
 
     /**
@@ -214,20 +235,5 @@ public final class MockServer {
             m_executor = null;
         }
         m_stopped.countDown();
-    }
-
-    /**
-     * Log the startup summary. Credentials from the configuration are deliberately not included.
-     */
-    private void logBanner() {
-        MockLog.info("dbsdk-mock-server " + version() + " started");
-        for (final Integer p : httpPorts()) {
-            MockLog.info("  HTTP  listening on " + m_config.getBindAddress() + ":" + p);
-        }
-        for (final Integer p : httpsPorts()) {
-            MockLog.info("  HTTPS listening on " + m_config.getBindAddress() + ":" + p);
-        }
-        MockLog.info("  OpenAI flavor: " + m_config.getOpenAiFlavor().name().toLowerCase(Locale.ROOT) + ", token TTL: " + m_config.getTokenTtlSeconds() + "s");
-        MockLog.info("  GET /mock/health for the endpoint catalogue. Press Ctrl+C to stop.");
     }
 }

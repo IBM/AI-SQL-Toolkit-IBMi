@@ -38,21 +38,6 @@ final class KafkaTest extends ToolkitTest {
         call("kafka_settopicforjob(" + STR + ")", m_jobTopic);
     }
 
-    /**
-     * Get the last record the mock stored for a topic.
-     *
-     * @param _topic
-     *            the topic
-     * @return the record
-     * @throws Exception
-     *             if the mock inspection fails
-     */
-    private JsonNode lastStoredRecord(final String _topic) throws Exception {
-        final JsonNode records = mock().kafkaRecords().path(_topic);
-        assertTrue(records.isArray() && records.size() > 0, "no records stored for topic " + _topic);
-        return records.get(records.size() - 1);
-    }
-
     @Test
     @DisplayName("getters prefer an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
@@ -77,24 +62,23 @@ final class KafkaTest extends ToolkitTest {
         assertEquals("http", value("dbsdk_v1.kafka_getprotocol()"));
     }
 
-    private String publish(final String _message, final String _key) throws SQLException {
-        return value("dbsdk_v1.kafka_publish(msgdata => " + STR + ", key => " + STR + ")", _message, _key);
+    /**
+     * Get the last record the mock stored for a topic.
+     *
+     * @param _topic
+     *            the topic
+     * @return the record
+     * @throws Exception
+     *             if the mock inspection fails
+     */
+    private JsonNode lastStoredRecord(final String _topic) throws Exception {
+        final JsonNode records = mock().kafkaRecords().path(_topic);
+        assertTrue(records.isArray() && records.size() > 0, "no records stored for topic " + _topic);
+        return records.get(records.size() - 1);
     }
 
-    /**
-     * A successful publish returns NULL and the record lands on the job's topic.
-     *
-     * @throws Exception
-     *             if the call or the mock inspection fails
-     */
-    @Test
-    @DisplayName("publish returns NULL and stores the record on the job's topic")
-    void publishStoresRecord() throws Exception {
-        assertNull(publish("{\"order\": 1001, \"status\": \"shipped\"}", "order-1001"));
-        final JsonNode record = lastStoredRecord(m_jobTopic);
-        assertEquals("order-1001", record.path("key").asText());
-        assertEquals("{\"order\": 1001, \"status\": \"shipped\"}", record.path("value").asText());
-        assertEquals("/topics/" + m_jobTopic, lastRequest("kafka").path("path").asText());
+    private String publish(final String _message, final String _key) throws SQLException {
+        return value("dbsdk_v1.kafka_publish(msgdata => " + STR + ", key => " + STR + ")", _message, _key);
     }
 
     /**
@@ -111,6 +95,22 @@ final class KafkaTest extends ToolkitTest {
         assertEquals(1, records.size());
         assertEquals("k1", records.at("/0/key").asText());
         assertEquals("envelope check", records.at("/0/value").asText());
+    }
+
+    /**
+     * A successful publish returns NULL and the record lands on the job's topic.
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("publish returns NULL and stores the record on the job's topic")
+    void publishStoresRecord() throws Exception {
+        assertNull(publish("{\"order\": 1001, \"status\": \"shipped\"}", "order-1001"));
+        final JsonNode record = lastStoredRecord(m_jobTopic);
+        assertEquals("order-1001", record.path("key").asText());
+        assertEquals("{\"order\": 1001, \"status\": \"shipped\"}", record.path("value").asText());
+        assertEquals("/topics/" + m_jobTopic, lastRequest("kafka").path("path").asText());
     }
 
     /**

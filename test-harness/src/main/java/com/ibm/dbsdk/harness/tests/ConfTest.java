@@ -35,59 +35,19 @@ final class ConfTest extends ToolkitTest {
 
     /** A fictional user profile used to check that one user's changes do not touch another's row. */
     private static final String OTHER_USER = "HARNESSX1";
+
     /**
      * Cast for the admin procedures' string parameters. Smaller than {@link #STR}: a CALL with several varchar(32000) markers exceeds Db2's limit on total parameter length (SQL0101).
      */
     private static final String SHORT_STR = "cast(? as varchar(1000) ccsid 1208)";
+
     private static final String USRPRF_MARKER = "cast(? as varchar(10) ccsid 1208)";
 
     private final Set<String> m_integerColumns = new HashSet<String>();
+
     private Map<String, String> m_savedRow = null;
+
     private String m_user = null;
-
-    /**
-     * Remember the running user's CONF row (and which columns are integers) so it can be restored afterwards.
-     *
-     * @throws SQLException
-     *             if reading fails
-     */
-    @BeforeAll
-    void saveConfRow() throws SQLException {
-        m_user = value("current_user").trim();
-        for (final Map<String, String> column : db().queryRows("select column_name, data_type from qsys2.syscolumns where table_schema = 'DBSDK_V1' and table_name = 'CONF'")) {
-            if (column.get("DATA_TYPE").trim().toUpperCase(Locale.ROOT).contains("INT")) {
-                m_integerColumns.add(column.get("COLUMN_NAME").trim());
-            }
-        }
-        final List<Map<String, String>> rows = confRows(m_user);
-        m_savedRow = rows.isEmpty() ? null : rows.get(0);
-        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
-    }
-
-    /**
-     * Put the running user's CONF row back exactly as it was (re-creating it if a test removed it), and remove the fictional user's row. Each column is restored with its own UPDATE: a single
-     * statement setting every column is too complex for Db2 (SQL0101).
-     *
-     * @throws SQLException
-     *             if restoring fails; the failure is reported against this class so it is not missed
-     */
-    @AfterAll
-    void restoreConfRow() throws SQLException {
-        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
-        if (null == m_savedRow) {
-            db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, m_user);
-            return;
-        }
-        call("conf_register_user()");
-        for (final Map.Entry<String, String> column : m_savedRow.entrySet()) {
-            if ("USRPRF".equals(column.getKey())) {
-                continue;
-            }
-            final boolean isInteger = m_integerColumns.contains(column.getKey());
-            final Object value = null == column.getValue() ? null : isInteger ? Integer.valueOf(column.getValue().trim()) : column.getValue();
-            db().execute("update dbsdk_v1.conf set " + column.getKey() + " = " + (isInteger ? INT : STR) + " where usrprf = " + USRPRF_MARKER, value, m_user);
-        }
-    }
 
     /**
      * @return the persistent settings: setter, getter, job variable, CONF column (when it differs from the variable) and test value
@@ -117,6 +77,50 @@ final class ConfTest extends ToolkitTest {
             new Setting("wx_SetIamBaseUrlForMe", "wx_GetIamBaseUrl", "wx_iam_baseurl", "watsonx_iam_baseurl", "http://conf-iam.example:8080"),
             new Setting("wx_SetMlBaseUrlForMe", "wx_GetMlBaseUrl", "wx_ml_baseurl", "watsonx_ml_baseurl", "http://conf-ml.example:8080"));
         //@formatter:on
+    }
+
+    /**
+     * Put the running user's CONF row back exactly as it was (re-creating it if a test removed it), and remove the fictional user's row. Each column is restored with its own UPDATE: a single
+     * statement setting every column is too complex for Db2 (SQL0101).
+     *
+     * @throws SQLException
+     *             if restoring fails; the failure is reported against this class so it is not missed
+     */
+    @AfterAll
+    void restoreConfRow() throws SQLException {
+        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
+        if (null == m_savedRow) {
+            db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, m_user);
+            return;
+        }
+        call("conf_register_user()");
+        for (final Map.Entry<String, String> column : m_savedRow.entrySet()) {
+            if ("USRPRF".equals(column.getKey())) {
+                continue;
+            }
+            final boolean isInteger = m_integerColumns.contains(column.getKey());
+            final Object value = null == column.getValue() ? null : isInteger ? Integer.valueOf(column.getValue().trim()) : column.getValue();
+            db().execute("update dbsdk_v1.conf set " + column.getKey() + " = " + (isInteger ? INT : STR) + " where usrprf = " + USRPRF_MARKER, value, m_user);
+        }
+    }
+
+    /**
+     * Remember the running user's CONF row (and which columns are integers) so it can be restored afterwards.
+     *
+     * @throws SQLException
+     *             if reading fails
+     */
+    @BeforeAll
+    void saveConfRow() throws SQLException {
+        m_user = value("current_user").trim();
+        for (final Map<String, String> column : db().queryRows("select column_name, data_type from qsys2.syscolumns where table_schema = 'DBSDK_V1' and table_name = 'CONF'")) {
+            if (column.get("DATA_TYPE").trim().toUpperCase(Locale.ROOT).contains("INT")) {
+                m_integerColumns.add(column.get("COLUMN_NAME").trim());
+            }
+        }
+        final List<Map<String, String>> rows = confRows(m_user);
+        m_savedRow = rows.isEmpty() ? null : rows.get(0);
+        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
     }
 
     /**
