@@ -34,7 +34,7 @@ By default the server listens on HTTP port 8080. Useful variations:
 # Listen on the toolkit's default ports (Ollama 11434, OpenAI-compatible 8000, Kafka 8082) as well
 java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080,11434,8000,8082
 
-# Also serve HTTPS, which watsonx and Twilio need (see "watsonx and Twilio" below)
+# Also serve HTTPS (only needed for host redirection; see "watsonx and Twilio" below)
 java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080 --https-port 443
 
 # Behave like Gemini's OpenAI-compatible endpoint and require an API key
@@ -121,8 +121,28 @@ Service names used for filtering are `watsonx`, `ollama`, `openai`, `kafka`, `sl
 
 ## watsonx and Twilio
 
-`wx_*` and `twilio_sendsms` hard-code HTTPS hosts (`iam.cloud.ibm.com`,
-`<region>.ml.cloud.ibm.com`, `api.twilio.com`). To redirect them to the mock:
+By default the watsonx functions and `twilio_sendsms` call the real services:
+`https://iam.cloud.ibm.com`, `https://<region>.ml.cloud.ibm.com` and `https://api.twilio.com`.
+Point them at the mock by setting their base URLs, either for the job or for your user profile:
+
+```sql
+call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8080');   -- wx_authenticate
+call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8080');    -- wx_generate, wx_getmodels
+call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8080');  -- twilio_sendsms
+
+-- or, persisted in DBSDK_V1.CONF:
+call dbsdk_v1.wx_SetIamBaseUrlForMe('http://MOCKHOST:8080');
+call dbsdk_v1.wx_SetMlBaseUrlForMe('http://MOCKHOST:8080');
+call dbsdk_v1.twilio_setbaseurlforme('http://MOCKHOST:8080');
+```
+
+Setting a job value to NULL falls back to the user profile value, and clearing that restores the
+default.
+
+### Toolkit builds without these settings
+
+Older builds of the toolkit hard-code the hosts above. To test one of those against the mock,
+redirect the hosts instead:
 
 1. Start the mock with `--https-port 443`. On first start it generates `mock-server.p12` and exports
    the certificate as `mock-server.pem`. The certificate's SANs cover those host names, every

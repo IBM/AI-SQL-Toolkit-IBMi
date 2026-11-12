@@ -102,16 +102,17 @@ values dbsdk_v1.slack_sendmessage('nope [[mock:status=403]]');
 -- ---------------------------------------------------------------------------------------------
 -- watsonx.ai and Twilio
 --
--- These functions hard-code their HTTPS hosts (iam.cloud.ibm.com, <region>.ml.cloud.ibm.com,
--- api.twilio.com). To route them to the mock:
---   a) Start the mock with --https-port 443. It generates mock-server.p12 / mock-server.pem.
---   b) Import mock-server.pem into the IBM i *SYSTEM certificate store with Digital Certificate
---      Manager (DCM) as a trusted CA.
---   c) Point the host names at the mock in the IBM i host table and search it first:
---        QSYS/ADDTCPHTE INTNETADR('<mock ip>') HOSTNAME(('iam.cloud.ibm.com') ('us-south.ml.cloud.ibm.com') ('api.twilio.com'))
---        QSYS/CHGTCPDMN HOSTSCHPTY(*LOCAL)
---   Undo with QSYS/RMVTCPHTE INTNETADR('<mock ip>') when you are finished.
+-- These call https://iam.cloud.ibm.com, https://<region>.ml.cloud.ibm.com and
+-- https://api.twilio.com by default. Point them at the mock with their base URL settings.
+-- (Toolkit builds without these settings need host redirection instead; see the mock README.)
 -- ---------------------------------------------------------------------------------------------
+call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8080');
+call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8080');
+call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8080');
+
+-- Expected: http://MOCKHOST:8080 for both
+values (dbsdk_v1.wx_GetIamBaseUrl(), dbsdk_v1.wx_GetMlBaseUrl());
+
 set dbsdk_v1.wx_region = 'us-south';
 set dbsdk_v1.wx_apiVersion = '2023-07-07';
 call dbsdk_v1.wx_logoutJob();
@@ -152,6 +153,9 @@ values dbsdk_v1.twilio_sendsms('5551234567', 'Hello from IBM i');
 -- Clean up job-level settings
 -- ---------------------------------------------------------------------------------------------
 call dbsdk_v1.wx_logoutJob();
+call dbsdk_v1.wx_SetIamBaseUrlForJob(NULL);
+call dbsdk_v1.wx_SetMlBaseUrlForJob(NULL);
+call dbsdk_v1.twilio_setbaseurlforjob(NULL);
 set dbsdk_v1.ollama_server = NULL;
 set dbsdk_v1.ollama_port = NULL;
 set dbsdk_v1.openai_compatible_server = NULL;

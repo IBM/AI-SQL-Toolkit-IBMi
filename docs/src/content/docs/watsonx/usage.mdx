@@ -7,7 +7,10 @@ sidebar:
 import { Aside, LinkButton } from '@astrojs/starlight/components';
 
 ----
-## watsonx main functionality 
+## watsonx main functionality
+### Usage note regarding model gateway
+IBM Cloud data platform now has a model gateway which should be generally preferred over the classic watsonx.ai approach enabled here.
+For more information see https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-model-gateway-overview.html?context=wx&audience=wdp&locale=en
 #### **Function:** `watsonx_generate`
 **Description:** calls a large language model in [dbsdk_v1.ai](http://dbsdk_v1.ai) to generate a response based on the input message.
 **Input parameters:**
@@ -47,6 +50,8 @@ import { Aside, LinkButton } from '@astrojs/starlight/components';
 
 #### **Function:** `watsonx_authenticate`
 **Description:** authenticates to the watsonx service and acquires an access token.
+The token is requested from the IAM base URL returned by `wx_GetIamBaseUrl` (by default
+`https://iam.cloud.ibm.com`).
 
 **Return type:** 
 - `char(1) ccsid 1208`
@@ -57,6 +62,70 @@ import { Aside, LinkButton } from '@astrojs/starlight/components';
 
 ----
 ## Utility functions
+### Service locations
+
+By default the watsonx functions call IBM Cloud: `https://iam.cloud.ibm.com` for access tokens
+and `https://<region>.ml.cloud.ibm.com` for everything else. Both can be changed, for example to
+route requests through a proxy or to a mock server for testing. The value used is the first one
+that is set: the function argument, then the job setting (`...ForJob`), then the user profile
+setting (`...ForMe`), then the default.
+#### **Function:** `wx_GetIamBaseUrl`
+
+**Description:** Gets the base URL of the IBM Cloud IAM service, which `wx_authenticate` calls
+to get an access token.
+
+**Input parameters:**
+- `BASEURL` (optional): A base URL to return instead of the configured one.
+
+**Return type:**
+- `varchar(1000) ccsid 1208`
+
+**Return value:**
+- The base URL without a trailing `/`. Defaults to `https://iam.cloud.ibm.com`.
+#### **Procedure:** `wx_SetIamBaseUrlForJob`
+
+**Description:** Sets the IBM Cloud IAM base URL to be used for the current job.
+
+**Input parameters:**
+- `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the job
+  setting, so the user profile setting or the default applies.
+#### **Procedure:** `wx_SetIamBaseUrlForMe`
+
+**Description:** Sets the IBM Cloud IAM base URL to be used for the current user profile
+(persists across jobs).
+
+**Input parameters:**
+- `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the user
+  profile setting, so the default applies.
+#### **Function:** `wx_GetMlBaseUrl`
+
+**Description:** Gets the base URL of the watsonx.ai service, which `wx_generate` and
+`wx_getmodels` call. The `/ml/v1/...` path is added to it.
+
+**Input parameters:**
+- `BASEURL` (optional): A base URL to return instead of the configured one.
+
+**Return type:**
+- `varchar(1000) ccsid 1208`
+
+**Return value:**
+- The base URL without a trailing `/`. Defaults to `https://<region>.ml.cloud.ibm.com`, where
+  `<region>` is the value of `dbsdk_v1.wx_region`.
+#### **Procedure:** `wx_SetMlBaseUrlForJob`
+
+**Description:** Sets the watsonx.ai base URL to be used for the current job.
+
+**Input parameters:**
+- `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the job
+  setting, so the user profile setting or the default applies.
+#### **Procedure:** `wx_SetMlBaseUrlForMe`
+
+**Description:** Sets the watsonx.ai base URL to be used for the current user profile (persists
+across jobs).
+
+**Input parameters:**
+- `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the user
+  profile setting, so the default applies.
 #### **Function:** `watsonx_SetApiKeyForJob`
 
 **Description:** Sets the watsonx API key to be used for the current job
