@@ -211,12 +211,12 @@ final class ConfTest extends ToolkitTest {
         call("ollama_setserverforme(" + STR + ")", "conf-value");
         call("ollama_setserverforjob(" + STR + ")", "job-value");
         assertEquals("job-value", value("dbsdk_v1.ollama_getserver()"));
-        db().execute("set dbsdk_v1.ollama_server = NULL");
+        call("ollama_setserverforjob(" + STR + ")", (Object) null);
         assertEquals("conf-value", value("dbsdk_v1.ollama_getserver()"));
     }
 
     /**
-     * Each *forme setter writes the CONF column, and the getter returns it when no job setting exists.
+     * Each *forme setter writes the CONF column, and the getter returns it once the job setting is cleared with the matching *forjob setter and NULL.
      *
      * @return one dynamic test per setting
      */
@@ -230,7 +230,7 @@ final class ConfTest extends ToolkitTest {
                 call(setting.m_setter + "(" + (isInteger ? INT : STR) + ")", setting.m_value);
                 final String stored = confRows(m_user).get(0).get(setting.m_column.toUpperCase(Locale.ROOT));
                 assertEquals(String.valueOf(setting.m_value), null == stored ? null : stored.trim(), "CONF column " + setting.m_column);
-                db().execute("set dbsdk_v1." + setting.m_variable + " = NULL");
+                call(setting.m_setter.replace("forme", "forjob").replace("ForMe", "ForJob") + "(" + (isInteger ? INT : STR) + ")", (Object) null);
                 assertEquals(String.valueOf(setting.m_value), value("dbsdk_v1." + setting.m_getter + "()"), setting.m_getter + "() with no job setting");
             }));
         }

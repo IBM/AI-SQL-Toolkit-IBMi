@@ -36,8 +36,9 @@ and the harness on the IBM i, and everything is `localhost`.
    java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080
    ```
 4. **The user profile** you connect as needs `*EXECUTE` on the toolkit's routines and
-   `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `DBSDK_V1.CONF`. See `test/README_TESTING.md` and
-   `test/grant_test_user.sql`.
+   `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `DBSDK_V1.CONF`, plus `READ`/`WRITE` on its global
+   variables. The schema owner has all of this; for another profile, run
+   [`sql/grant_test_user.sql`](sql/grant_test_user.sql) as the owner.
 5. **XMLSERVICE** for the PASE tests (`--skip pase` otherwise).
 
 ## `make test`
@@ -153,7 +154,7 @@ Exit status: `0` all tests passed, `1` at least one test failed, `2` usage or en
 | `twilio` | `twilio_sendsms` (status, request fields, errors) and configuration, including the base URL setting (`twilio_getbaseurl` and its setters) |
 | `watsonx` | `wx_authenticate`, `wx_generate` (default and explicit model, `parameters`, errors) and `wx_getmodels`; `parameters()`, `GetUrl`, the IAM and watsonx.ai base URL settings (`wx_GetIamBaseUrl`, `wx_GetMlBaseUrl` and their setters), API key and project settings, the token lifecycle (`wx_ShouldGetNewToken`, `wx_SetBearerTokenForJob`, `wx_logoutJob`), and `wx_generate` without a token |
 | `conf` | `conf_register_user`, `conf_initialize`, `conf_remove_user`, every `*forme` setter (21), precedence of job settings over `CONF`, multi-user row isolation (#21/#27), and the `CONF_*` admin procedures |
-| `json` | `json_object_update`, using the cases documented in `test/test_json_object_update.sql` |
+| `json` | `json_object_update`, using the cases formerly documented in `test/test_json_object_update.sql` |
 | `pase` | `pase_call` |
 
 The watsonx and Twilio tests point the toolkit at the mock with its base URL settings
@@ -197,6 +198,7 @@ test-harness/
 │   ├── MockClient.java                  Mock server inspection API client
 │   ├── ConsoleReporter.java             PASS/FAIL/SKIP console output
 │   └── tests/                           The toolkit tests (JUnit 5), one class per area
+├── sql/grant_test_user.sql              Grants a separate test profile the authority it needs
 └── src/test/java/...                    Unit tests for the harness itself
 ```
 

@@ -65,7 +65,8 @@ final class WatsonxServiceTest extends ToolkitTest {
     }
 
     /**
-     * An invalid key must not authenticate. Whether the function returns N or raises an error is not documented, so either is accepted.
+     * An invalid key must not authenticate. Whether the function returns N or raises an error is not documented, so either is accepted. Afterwards a new token is still needed and generate
+     * is refused (from the former test/a.sql).
      *
      * @throws SQLException
      *             if resetting the key fails
@@ -83,6 +84,8 @@ final class WatsonxServiceTest extends ToolkitTest {
                 result = "error: " + _e.getMessage();
             }
             assertFalse("Y".equals(result), "authentication with an invalid key returned Y");
+            assertEquals("Y", value("dbsdk_v1.wx_ShouldGetNewToken()"), "a failed authentication must not store a token");
+            assertSqlState("38001", () -> value("dbsdk_v1.wx_generate(" + STR + ")", "Hello world"));
         } finally {
             call("wx_SetApiKeyForJob(" + STR + ")", API_KEY);
             call("wx_logoutJob()");
@@ -107,6 +110,20 @@ final class WatsonxServiceTest extends ToolkitTest {
         assertEquals(DEFAULT_MODEL, body.path("model_id").asText());
         assertEquals("harness-project", body.path("project_id").asText());
         assertNumber(100, body.path("parameters"), "max_new_tokens");
+    }
+
+    /**
+     * Naming the default model explicitly gives the same result as omitting it (from the former test/a.sql).
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("generate accepts the default model as an explicit model_id")
+    void generateWithExplicitDefaultModel() throws Exception {
+        assertEquals("Y", authenticate());
+        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ")", "Hello world", DEFAULT_MODEL));
+        assertEquals(DEFAULT_MODEL, lastRequestJson("watsonx").path("model_id").asText());
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.ibm.dbsdk.harness.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.SQLException;
 
@@ -11,7 +12,8 @@ import org.junit.jupiter.api.Test;
 import com.ibm.dbsdk.harness.HarnessConfig;
 
 /**
- * {@code json_object_update}, with the cases and expected results documented in {@code test/test_json_object_update.sql}. Results are compared as JSON, and duplicate keys count as invalid.
+ * {@code json_object_update}, with the cases and expected results formerly documented in {@code test/test_json_object_update.sql}. Results are compared as JSON, and duplicate keys count as
+ * invalid.
  */
 @DisplayName("json_object_update")
 @Tag("json")
@@ -71,6 +73,26 @@ final class JsonObjectUpdateTest extends ToolkitTest {
         final String expected = "{\"name\": \"John\", \"age\": 30, \"occupation\": \"Dev\"}";
         assertEquals(json(expected), json(clobValue("dbsdk_v1.json_object_update('{\"name\": \"John\", \"age\": 30}', json_object('occupation': 'Dev'))")));
         assertEquals(json(expected), json(clobValue("dbsdk_v1.json_object_update(json_object('occupation': 'Dev'), '{\"name\": \"John\", \"age\": 30}')")));
+    }
+
+    /**
+     * JSON booleans survive a merge, including ones built by JSON_OBJECT from BOOLEAN values (the BOOLEAN part needs a Db2 for i release with the BOOLEAN type).
+     *
+     * @throws SQLException
+     *             if a call fails
+     */
+    @Test
+    @DisplayName("keeps JSON booleans, including ones built from BOOLEAN values")
+    void mergeBooleans() throws SQLException {
+        assertMerge("{\"string_true\": \"true\", \"boolean_true\": true}", "{\"boolean_false\": false}", "{\"string_true\": \"true\", \"boolean_true\": true, \"boolean_false\": false}");
+        final String merged;
+        try {
+            merged = clobValue("dbsdk_v1.json_object_update(json_object('string_true': 'true', 'boolean_true': cast('true' as boolean)), json_object('boolean_false': cast('false' as boolean)))");
+        } catch (final SQLException _e) {
+            assumeTrue(false, "this Db2 for i release has no BOOLEAN type: " + _e.getMessage());
+            return;
+        }
+        assertEquals(json("{\"string_true\": \"true\", \"boolean_true\": true, \"boolean_false\": false}"), json(merged), "merged: " + merged);
     }
 
     @Test
