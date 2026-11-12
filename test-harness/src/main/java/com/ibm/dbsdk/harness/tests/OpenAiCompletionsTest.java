@@ -115,6 +115,38 @@ final class OpenAiCompletionsTest extends ToolkitTest {
         }
     }
 
+    /**
+     * NULL options behave like empty options (from the former test/openai_compatible_test.sql).
+     *
+     * @throws Exception
+     *             if a call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("NULL options send the documented defaults")
+    void nullOptionsUseDefaults() throws Exception {
+        assertEquals(expectedReply(PROMPT), generate(PROMPT, null));
+        final JsonNode body = lastRequestJson("openai");
+        assertEquals(MODEL, body.path("model").asText());
+        assertNumber(256, body, "max_tokens");
+        assertNumber(1, body, "temperature");
+        assertEquals(expectedReply(PROMPT), json(generateJson(PROMPT, null)).at("/choices/0/text").asText());
+    }
+
+    /**
+     * The prompt alone is enough; options default to '{}' (from the former test/openai_compatible_test.sql).
+     *
+     * @throws Exception
+     *             if a call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("a prompt alone uses the default options")
+    void promptOnlyUsesDefaults() throws Exception {
+        final String prompt = "Tell me a story about a dragon.";
+        assertEquals(expectedReply(prompt), clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ")", prompt));
+        assertNumber(256, lastRequestJson("openai"), "max_tokens");
+        assertEquals(expectedReply(prompt), json(clobValue("dbsdk_v1.openai_compatible_generate_json(" + STR + ")", prompt)).at("/choices/0/text").asText());
+    }
+
     @Test
     @DisplayName("presence_penalty and frequency_penalty are sent")
     void frequencyAndPresencePenaltiesAreSent() throws Exception {

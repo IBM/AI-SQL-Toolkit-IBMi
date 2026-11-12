@@ -106,6 +106,8 @@ final class WatsonxTest extends ToolkitTest {
         db().execute("set dbsdk_v1.wx_region = 'eu-de'");
         db().execute("set dbsdk_v1.wx_apiVersion = '2023-07-07'");
         assertEquals("https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
+        db().execute("set dbsdk_v1.wx_region = 'us-south'");
+        assertEquals("https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
     }
 
     /**
@@ -179,6 +181,18 @@ final class WatsonxTest extends ToolkitTest {
         assertNumber(1000, params, "time_limit");
         assertNumber(7, params, "random_seed");
         assertEquals(4, params.size(), params.toString());
+    }
+
+    /**
+     * The documented example: parameters(temperature => 0.5, time_limit => 1000) gives exactly {"temperature":0.5,"time_limit":1000} (from the former test/a.sql).
+     *
+     * @throws SQLException
+     *             if the call fails
+     */
+    @Test
+    @DisplayName("parameters(temperature => 0.5, time_limit => 1000) gives exactly that object")
+    void parametersDocumentedExample() throws SQLException {
+        assertEquals(json("{\"temperature\":0.5,\"time_limit\":1000}"), json(value("dbsdk_v1.parameters(temperature => 0.5, time_limit => 1000)")));
     }
 
     @Test

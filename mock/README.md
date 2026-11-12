@@ -59,8 +59,8 @@ java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --openai-flavor gemi
 | `-q, --quiet` | | Don't log each request |
 
 When you don't configure a credential, the mock accepts any non-empty value. One exception:
-watsonx API keys that start with `BAD`, `-BAD` or `invalid` are always rejected, which matches the
-existing `test/a.sql`.
+watsonx API keys that start with `BAD`, `-BAD` or `invalid` are always rejected, so tests can
+exercise failed authentication with a key like `-BAD`.
 
 ## What is mocked
 
