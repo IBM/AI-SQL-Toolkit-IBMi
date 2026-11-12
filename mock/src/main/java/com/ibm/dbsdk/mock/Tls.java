@@ -29,7 +29,7 @@ final class Tls {
     /** keytool reads the store password from this variable so it never appears on a command line. */
     private static final String PASSWORD_ENV = "DBSDK_MOCK_STOREPASS";
 
-    /** Host names the toolkit hard-codes (watsonx and Twilio) plus local names, used as SANs. */
+    /** The toolkit's default watsonx and Twilio host names plus local names, used as SANs for host redirection. */
     private static final List<String> s_defaultDnsNames = Arrays.asList("localhost", "iam.cloud.ibm.com", "us-south.ml.cloud.ibm.com", "eu-de.ml.cloud.ibm.com", "eu-gb.ml.cloud.ibm.com",
         "jp-tok.ml.cloud.ibm.com", "au-syd.ml.cloud.ibm.com", "ca-tor.ml.cloud.ibm.com", "api.twilio.com");
 
@@ -73,7 +73,7 @@ final class Tls {
     }
 
     /**
-     * Generate a self-signed PKCS12 keystore with keytool and export its certificate as PEM next to it. The certificate's SANs cover the hosts the toolkit hard-codes, so DNS overrides on IBM i can
+     * Generate a self-signed PKCS12 keystore with keytool and export its certificate as PEM next to it. The certificate's SANs cover the toolkit's default watsonx and Twilio hosts, so DNS overrides on IBM i can
      * point them at the mock.
      *
      * @param _keystore

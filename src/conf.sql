@@ -5,6 +5,8 @@ create or replace variable dbsdk_v1.wx_apikey              varchar(100) ccsid 12
 create or replace variable dbsdk_v1.wx_projectid           varchar(100) ccsid 1208 default NULL;
 create or replace variable dbsdk_v1.wx_JobBearerToken      varchar(10000) ccsid 1208 default null;
 create or replace variable dbsdk_v1.wx_JobTokenExpires     timestamp;
+create or replace variable dbsdk_v1.wx_iam_baseurl         varchar(1000) ccsid 1208 default NULL;
+create or replace variable dbsdk_v1.wx_ml_baseurl          varchar(1000) ccsid 1208 default NULL;
 
 -- variables for ollama
 create or replace variable dbsdk_v1.ollama_protocol     varchar(16)   ccsid 1208 default null;
@@ -33,6 +35,7 @@ create or replace variable dbsdk_v1.slack_webhook      varchar(1000) ccsid 1208 
 create or replace variable dbsdk_v1.twilio_number      varchar(1000) ccsid 1208 default NULL;
 create or replace variable dbsdk_v1.twilio_sid         varchar(1000) ccsid 1208 default NULL;
 create or replace variable dbsdk_v1.twilio_authtoken   varchar(1000) ccsid 1208 default NULL;
+create or replace variable dbsdk_v1.twilio_baseurl     varchar(1000) ccsid 1208 default NULL;
 
 create or replace table dbsdk_v1.conf
       (
@@ -61,6 +64,9 @@ create or replace table dbsdk_v1.conf
           twilio_number varchar(1000) ccsid 1208 default NULL,
           twilio_sid varchar(1000) ccsid 1208 default NULL,
           twilio_authtoken varchar(1000) ccsid 1208 default NULL,
+          watsonx_iam_baseurl varchar(1000) ccsid 1208 default NULL,
+          watsonx_ml_baseurl varchar(1000) ccsid 1208 default NULL,
+          twilio_baseurl varchar(1000) ccsid 1208 default NULL,
         PRIMARY KEY(USRPRF)
       )
       on replace preserve rows;

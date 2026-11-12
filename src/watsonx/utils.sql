@@ -1,12 +1,156 @@
 
 -- ## Utility functions
 
-create or replace function dbsdk_v1.GetUrl(route varchar(1000))
-  returns varchar(256) ccsid 1208
-begin
-  declare finalUrl varchar(256) ccsid 1208;
+-- ### Service locations
+--
+-- By default the watsonx functions call IBM Cloud: `https://iam.cloud.ibm.com` for access tokens
+-- and `https://<region>.ml.cloud.ibm.com` for everything else. Both can be changed, for example to
+-- route requests through a proxy or to a mock server for testing. The value used is the first one
+-- that is set: the function argument, then the job setting (`...ForJob`), then the user profile
+-- setting (`...ForMe`), then the default.
 
-  set finalUrl = 'https://' concat dbsdk_v1.wx_region concat '.ml.cloud.ibm.com/ml/v1' concat route;
+-- #### **Function:** `wx_GetIamBaseUrl`
+--
+-- **Description:** Gets the base URL of the IBM Cloud IAM service, which `wx_authenticate` calls
+-- to get an access token.
+--
+-- **Input parameters:**
+-- - `BASEURL` (optional): A base URL to return instead of the configured one.
+--
+-- **Return type:**
+-- - `varchar(1000) ccsid 1208`
+--
+-- **Return value:**
+-- - The base URL without a trailing `/`. Defaults to `https://iam.cloud.ibm.com`.
+create or replace function dbsdk_v1.wx_GetIamBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
+  returns varchar(1000) ccsid 1208
+  reads sql data
+begin
+  declare returnval varchar(1000) ccsid 1208;
+  set returnval = baseurl;
+  if (returnval is null) then
+    set returnval = dbsdk_v1.wx_iam_baseurl;
+  end if;
+  if (returnval is null) then
+    set returnval = (select watsonx_iam_baseurl from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  end if;
+  if (returnval is null or trim(returnval) = '') then
+    set returnval = 'https://iam.cloud.ibm.com';
+  end if;
+  return rtrim(trim(returnval), '/');
+end;
+
+-- #### **Procedure:** `wx_SetIamBaseUrlForJob`
+--
+-- **Description:** Sets the IBM Cloud IAM base URL to be used for the current job.
+--
+-- **Input parameters:**
+-- - `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the job
+--   setting, so the user profile setting or the default applies.
+create or replace procedure dbsdk_v1.wx_SetIamBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
+  program type sub
+  set option usrprf = *user, dynusrprf = *user, commit = *none
+begin
+  set dbsdk_v1.wx_iam_baseurl = baseurl;
+end;
+
+-- #### **Procedure:** `wx_SetIamBaseUrlForMe`
+--
+-- **Description:** Sets the IBM Cloud IAM base URL to be used for the current user profile
+-- (persists across jobs).
+--
+-- **Input parameters:**
+-- - `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the user
+--   profile setting, so the default applies.
+create or replace procedure dbsdk_v1.wx_SetIamBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
+  modifies sql data
+  set option usrprf = *user, dynusrprf = *user, commit = *none
+begin
+  MERGE INTO dbsdk_v1.conf tt USING (
+    SELECT CURRENT_USER AS usrprf, baseurl AS watsonx_iam_baseurl
+      FROM sysibm.sysdummy1
+  ) live
+  ON tt.usrprf = live.usrprf
+  WHEN NOT MATCHED THEN INSERT (usrprf, watsonx_iam_baseurl) VALUES (live.usrprf,
+      live.watsonx_iam_baseurl)
+  WHEN MATCHED THEN UPDATE SET watsonx_iam_baseurl = live.watsonx_iam_baseurl;
+end;
+
+-- #### **Function:** `wx_GetMlBaseUrl`
+--
+-- **Description:** Gets the base URL of the watsonx.ai service, which `wx_generate` and
+-- `wx_getmodels` call. The `/ml/v1/...` path is added to it.
+--
+-- **Input parameters:**
+-- - `BASEURL` (optional): A base URL to return instead of the configured one.
+--
+-- **Return type:**
+-- - `varchar(1000) ccsid 1208`
+--
+-- **Return value:**
+-- - The base URL without a trailing `/`. Defaults to `https://<region>.ml.cloud.ibm.com`, where
+--   `<region>` is the value of `dbsdk_v1.wx_region`.
+create or replace function dbsdk_v1.wx_GetMlBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
+  returns varchar(1000) ccsid 1208
+  reads sql data
+begin
+  declare returnval varchar(1000) ccsid 1208;
+  set returnval = baseurl;
+  if (returnval is null) then
+    set returnval = dbsdk_v1.wx_ml_baseurl;
+  end if;
+  if (returnval is null) then
+    set returnval = (select watsonx_ml_baseurl from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  end if;
+  if (returnval is null or trim(returnval) = '') then
+    set returnval = 'https://' concat dbsdk_v1.wx_region concat '.ml.cloud.ibm.com';
+  end if;
+  return rtrim(trim(returnval), '/');
+end;
+
+-- #### **Procedure:** `wx_SetMlBaseUrlForJob`
+--
+-- **Description:** Sets the watsonx.ai base URL to be used for the current job.
+--
+-- **Input parameters:**
+-- - `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the job
+--   setting, so the user profile setting or the default applies.
+create or replace procedure dbsdk_v1.wx_SetMlBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
+  program type sub
+  set option usrprf = *user, dynusrprf = *user, commit = *none
+begin
+  set dbsdk_v1.wx_ml_baseurl = baseurl;
+end;
+
+-- #### **Procedure:** `wx_SetMlBaseUrlForMe`
+--
+-- **Description:** Sets the watsonx.ai base URL to be used for the current user profile (persists
+-- across jobs).
+--
+-- **Input parameters:**
+-- - `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the user
+--   profile setting, so the default applies.
+create or replace procedure dbsdk_v1.wx_SetMlBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
+  modifies sql data
+  set option usrprf = *user, dynusrprf = *user, commit = *none
+begin
+  MERGE INTO dbsdk_v1.conf tt USING (
+    SELECT CURRENT_USER AS usrprf, baseurl AS watsonx_ml_baseurl
+      FROM sysibm.sysdummy1
+  ) live
+  ON tt.usrprf = live.usrprf
+  WHEN NOT MATCHED THEN INSERT (usrprf, watsonx_ml_baseurl) VALUES (live.usrprf,
+      live.watsonx_ml_baseurl)
+  WHEN MATCHED THEN UPDATE SET watsonx_ml_baseurl = live.watsonx_ml_baseurl;
+end;
+
+create or replace function dbsdk_v1.GetUrl(route varchar(1000))
+  returns varchar(2048) ccsid 1208
+  reads sql data
+begin
+  declare finalUrl varchar(2048) ccsid 1208;
+
+  set finalUrl = dbsdk_v1.wx_GetMlBaseUrl() concat '/ml/v1' concat route;
 
   if (dbsdk_v1.wx_apiVersion is not null and dbsdk_v1.wx_apiVersion != '') then
     set finalUrl = finalUrl concat '?version=' concat dbsdk_v1.wx_apiVersion;

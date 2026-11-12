@@ -3,6 +3,8 @@
 -- #### **Function:** `twilio_sendsms`
 -- 
 -- **Description:** Use Twilio to send an SMS message
+-- through the Twilio API at the base URL returned by `twilio_getbaseurl` (by default
+-- `https://api.twilio.com`).
 -- 
 -- **Input parameters:**
 -- - `TO_CELL_NUMBER` (required): The destination cell phone number.
@@ -32,7 +34,7 @@ begin
   
   set http_options = json_object('basicAuth': dbsdk_v1.twilio_getsid() concat ',' concat dbsdk_v1.twilio_getauthtoken(), 'header': 'content-type,application/x-www-form-urlencoded');
   
-  set fullUrl = 'https://api.twilio.com/2010-04-01/Accounts/' concat dbsdk_v1.twilio_getsid() concat '/Messages.json';
+  set fullUrl = dbsdk_v1.twilio_getbaseurl() concat '/2010-04-01/Accounts/' concat dbsdk_v1.twilio_getsid() concat '/Messages.json';
   set payload = 'To=' concat to_cell_number concat
           '&From=' concat dbsdk_v1.twilio_getnumber(twilio_number) concat '&Body=' concat
           msg;
