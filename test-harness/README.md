@@ -40,11 +40,33 @@ and the harness on the IBM i, and everything is `localhost`.
    `test/grant_test_user.sql`.
 5. **XMLSERVICE** for the PASE tests (`--skip pase` otherwise).
 
+## `make test`
+
+From the repository root on IBM i, `make test` does everything:
+1. Builds the toolkit into `DBSDK_V1`.
+2. Builds the mock server and this harness with `/QOpenSys/pkgs/bin/mvn`.
+3. Starts the mock on `127.0.0.1:8080` and runs the suite against mapepire-server on `localhost:8076`.
+4. Stops the mock again.
+
+For unattended runs, put the credentials in `.dbsdk-test.env` in the repository root (git ignores
+this file) and make it readable only by you:
+
+```sh
+umask 077
+printf 'MAPEPIRE_USER=MYUSER
+MAPEPIRE_PASSWORD=...
+' > .dbsdk-test.env
+```
+
+Tests for open toolkit bugs (`known-issue`) are skipped by default; `make test HARNESS_ARGS=`
+includes them. Other settings: `MOCK_PORT`, `MAPEPIRE_HOST`, `MAPEPIRE_PORT`, `MVN` and `JAVA_HOME`
+(see `test-harness/run-tests.sh` and the root `makefile`).
+
 ## Build
 
 ```sh
 cd test-harness
-./mvnw package          # Windows: mvnw.cmd package
+mvn package             # on IBM i: /QOpenSys/pkgs/bin/mvn package
 ```
 
 This produces `target/dbsdk-test-harness-1.0.0-jar-with-dependencies.jar`. The build also runs

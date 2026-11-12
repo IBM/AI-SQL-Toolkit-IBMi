@@ -22,6 +22,7 @@ public final class MockState {
     private final MockConfig m_config;
     private final Map<String, List<JsonNode>> m_kafkaTopics = new TreeMap<String, List<JsonNode>>();
     private final AtomicLong m_requestSeq = new AtomicLong();
+    private volatile Runnable m_shutdownAction = null;
     private final Deque<ObjectNode> m_requests = new ArrayDeque<ObjectNode>();
     private final Instant m_startedAt = Instant.now();
     private final Map<String, Long> m_tokenExpiries = new ConcurrentHashMap<String, Long>();
@@ -204,6 +205,21 @@ public final class MockState {
     }
 
     /**
+     * Stop the server, if a shutdown action has been registered. Runs on a new thread so that the request asking for the shutdown can finish first.
+     *
+     * @return true if a shutdown was started
+     */
+    public boolean requestShutdown() {
+        final Runnable action = m_shutdownAction;
+        if (null == action) {
+            return false;
+        }
+        final Thread t = new Thread(action, "mock-shutdown-request");
+        t.start();
+        return true;
+    }
+
+    /**
      * Clear recorded requests, issued tokens and Kafka topics.
      */
     public void reset() {
@@ -212,6 +228,14 @@ public final class MockState {
         synchronized (m_kafkaTopics) {
             m_kafkaTopics.clear();
         }
+    }
+
+    /**
+     * @param _action
+     *            what {@link #requestShutdown()} runs, normally the server's stop method
+     */
+    public void setShutdownAction(final Runnable _action) {
+        m_shutdownAction = _action;
     }
 
     /** Result of validating a bearer token. */

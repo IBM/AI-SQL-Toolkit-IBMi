@@ -15,11 +15,11 @@ infrastructure.
 
 ```sh
 cd mock
-./mvnw package          # Windows: mvnw.cmd package
+mvn package             # on IBM i: /QOpenSys/pkgs/bin/mvn package
 ```
 
-This produces `target/dbsdk-mock-server-1.0.0-jar-with-dependencies.jar`. If Maven is already
-installed, `mvn package` works too. You can build with any JDK from 8 upward. On JDK 9+ the build
+This produces `target/dbsdk-mock-server-1.0.0-jar-with-dependencies.jar`. Maven 3.2.5 or newer
+works, including the 3.6.0 in the IBM i open source repository. You can build with any JDK from 8 upward. On JDK 9+ the build
 compiles with `--release 8`, so the jar always runs on Java 8.
 
 ## Run
@@ -115,6 +115,7 @@ values dbsdk_v1.openai_compatible_generate('[[mock:reply={"ok":true}]]');
 | `DELETE /mock/requests` | Clear the request log |
 | `GET /mock/kafka` | Records published per topic |
 | `POST /mock/reset` | Clear requests, issued tokens and Kafka topics |
+| `POST /mock/shutdown` | Stop the server. Scripts should use this to stop it: on IBM i the JVM runs in its own job, so signalling the `java` process may not end it. |
 
 Service names used for filtering are `watsonx`, `ollama`, `openai`, `kafka`, `slack` and
 `twilio`.
@@ -172,7 +173,6 @@ machine running the mock.
 ```
 mock/
 ├── pom.xml                         Maven build (Java 8 target, jar-with-dependencies)
-├── mvnw, mvnw.cmd, .mvn/           Maven wrapper (no local Maven install needed)
 ├── sql/mock_test.sql               End-to-end SQL script for IBM i
 └── src/
     ├── main/java/com/ibm/dbsdk/mock/

@@ -82,11 +82,13 @@
   </dependencies>
 
   <build>
+    <!-- Plugin versions are the newest that still support Maven 3.2.5+, so the build works with
+         the Maven in the IBM i open source package repository (3.6.0). -->
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.4.1</version>
         <executions>
           <execution>
             <id>enforce-java</id>
@@ -107,7 +109,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
+        <version>3.11.0</version>
         <configuration>
           <showWarnings>true</showWarnings>
         </configuration>
@@ -116,13 +118,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>3.2.5</version>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifest>
@@ -137,7 +139,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.7.1</version>
+        <version>3.6.0</version>
         <configuration>
           <!-- jar-with-dependencies, plus merging of META-INF/services files; see the descriptor -->
           <descriptors>

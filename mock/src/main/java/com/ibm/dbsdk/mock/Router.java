@@ -1,6 +1,7 @@
 package com.ibm.dbsdk.mock;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ibm.dbsdk.mock.handlers.AdminHandler;
@@ -46,7 +47,8 @@ final class Router implements HttpHandler {
     }
 
     /**
-     * Dispatch one request to its service handler, then record and log it. This is the request boundary: any failure is converted into a 500 response.
+     * Dispatch one request to its service handler, then log it. The request is recorded just before its response is sent (or afterwards, if no response could be sent). This is the request
+     * boundary: any failure is converted into a 500 response.
      *
      * @param _exchange
      *            the exchange to handle
@@ -62,16 +64,16 @@ final class Router implements HttpHandler {
             _exchange.close();
             return;
         }
+        final AtomicBoolean recorded = new AtomicBoolean(false);
+        call.setResponseListener(_call -> record(_call, start, recorded));
         try {
             dispatch(call);
         } catch (final Exception _e) {
             MockLog.error("Mock handler failed for " + call.getMethod() + " " + Redactor.redactPath(call.getPath()), _e);
             sendInternalError(call, "Mock server internal error: " + _e.getClass().getName());
         } finally {
+            record(call, start, recorded);
             final long elapsed = System.currentTimeMillis() - start;
-            if (!"admin".equals(call.getServiceName())) {
-                m_state.record(call, elapsed);
-            }
             MockLog.info(String.format("%-8s %3d %-6s %s (%d ms)", call.getServiceName(), Integer.valueOf(call.getResponseStatus()), call.getMethod(), Redactor.redactPath(call.getRawUri()),
                 Long.valueOf(elapsed)));
         }
@@ -99,6 +101,22 @@ final class Router implements HttpHandler {
         handler.handle(_call);
         if (!_call.hasResponded()) {
             sendInternalError(_call, "Mock handler produced no response");
+        }
+    }
+
+    /**
+     * Record a call once. Requests to the admin endpoints are not recorded.
+     *
+     * @param _call
+     *            the call
+     * @param _start
+     *            when handling started, in epoch milliseconds
+     * @param _recorded
+     *            whether the call has already been recorded
+     */
+    private void record(final HttpCall _call, final long _start, final AtomicBoolean _recorded) {
+        if (!"admin".equals(_call.getServiceName()) && _recorded.compareAndSet(false, true)) {
+            m_state.record(_call, System.currentTimeMillis() - _start);
         }
     }
 
