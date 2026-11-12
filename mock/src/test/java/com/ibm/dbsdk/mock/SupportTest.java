@@ -49,8 +49,8 @@ class SupportTest {
     }
 
     @Test
-    void defaultsToPort8080() {
-        assertEquals(Integer.valueOf(8080), MockConfig.parse(new String[0]).getHttpPorts().get(0));
+    void defaultsToPort8888() {
+        assertEquals(Integer.valueOf(8888), MockConfig.parse(new String[0]).getHttpPorts().get(0));
     }
 
     /**
@@ -105,7 +105,7 @@ class SupportTest {
      */
     @Test
     void parsesCommandLine() {
-        final MockConfig c = MockConfig.parse(new String[] { "--port", "8080,11434", "--https-port=8443", "--openai-flavor", "gemini", "--openai-api-key", "k", "--token-ttl", "60", "-q" });
+        final MockConfig c = MockConfig.parse(new String[] { "--port", "8888,11434", "--https-port=8443", "--openai-flavor", "gemini", "--openai-api-key", "k", "--token-ttl", "60", "-q" });
         assertEquals(2, c.getHttpPorts().size());
         assertEquals(Integer.valueOf(8443), c.getHttpsPorts().get(0));
         assertEquals(MockConfig.OpenAiFlavor.GEMINI, c.getOpenAiFlavor());

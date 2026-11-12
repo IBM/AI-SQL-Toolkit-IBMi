@@ -28,14 +28,14 @@ compiles with `--release 8`, so the jar always runs on Java 8.
 java -jar target/dbsdk-mock-server-1.0.0-jar-with-dependencies.jar
 ```
 
-By default the server listens on HTTP port 8080. Useful variations:
+By default the server listens on HTTP port 8888. Useful variations:
 
 ```sh
 # Listen on the toolkit's default ports (Ollama 11434, OpenAI-compatible 8000, Kafka 8082) as well
-java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080,11434,8000,8082
+java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8888,11434,8000,8082
 
 # Also serve HTTPS (only needed for host redirection; see "watsonx and Twilio" below)
-java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080 --https-port 443
+java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8888 --https-port 443
 
 # Behave like Gemini's OpenAI-compatible endpoint and require an API key
 java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --openai-flavor gemini --openai-api-key sk-test
@@ -45,7 +45,7 @@ java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --openai-flavor gemi
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `-p, --port <p[,p...]>` | `8080` | HTTP port(s) |
+| `-p, --port <p[,p...]>` | `8888` | HTTP port(s) |
 | `--https-port <p[,p...]>` | none | HTTPS port(s) |
 | `--keystore <file>` | generated | PKCS12/JKS keystore for HTTPS. If you omit it, `mock-server.p12` and `mock-server.pem` are generated in the working directory with `keytool`. |
 | `--keystore-password <pw>` | `changeit` | Keystore password |
@@ -127,14 +127,14 @@ By default the watsonx functions and `twilio_sendsms` call the real services:
 Point them at the mock by setting their base URLs, either for the job or for your user profile:
 
 ```sql
-call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8080');   -- wx_authenticate
-call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8080');    -- wx_generate, wx_getmodels
-call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8080');  -- twilio_sendsms
+call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8888');   -- wx_authenticate
+call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8888');    -- wx_generate, wx_getmodels
+call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8888');  -- twilio_sendsms
 
 -- or, persisted in DBSDK_V1.CONF:
-call dbsdk_v1.wx_SetIamBaseUrlForMe('http://MOCKHOST:8080');
-call dbsdk_v1.wx_SetMlBaseUrlForMe('http://MOCKHOST:8080');
-call dbsdk_v1.twilio_setbaseurlforme('http://MOCKHOST:8080');
+call dbsdk_v1.wx_SetIamBaseUrlForMe('http://MOCKHOST:8888');
+call dbsdk_v1.wx_SetMlBaseUrlForMe('http://MOCKHOST:8888');
+call dbsdk_v1.twilio_setbaseurlforme('http://MOCKHOST:8888');
 ```
 
 Setting a job value to NULL falls back to the user profile value, and clearing that restores the

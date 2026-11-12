@@ -6,7 +6,7 @@
 # from the repository root (use "sh" explicitly: on IBM i PASE, #!/bin/sh resolves to QShell).
 #
 # Settings (environment variables):
-#   MOCK_PORT        port for the mock server (default 8080)
+#   MOCK_PORT        port for the mock server (default 8888)
 #   MOCK_BIND        address the mock listens on (default 127.0.0.1; the toolkit must reach it)
 #   MAPEPIRE_HOST    mapepire-server host (default localhost)
 #   MAPEPIRE_PORT    mapepire-server port (default 8076)
@@ -39,7 +39,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 MOCK_JAR="$ROOT/mock/target/dbsdk-mock-server-1.0.0-jar-with-dependencies.jar"
 HARNESS_JAR="$ROOT/test-harness/target/dbsdk-test-harness-1.0.0-jar-with-dependencies.jar"
-MOCK_PORT=${MOCK_PORT:-8080}
+MOCK_PORT=${MOCK_PORT:-8888}
 MOCK_BIND=${MOCK_BIND:-127.0.0.1}
 MAPEPIRE_HOST=${MAPEPIRE_HOST:-localhost}
 MAPEPIRE_PORT=${MAPEPIRE_PORT:-8076}

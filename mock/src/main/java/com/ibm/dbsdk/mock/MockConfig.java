@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public final class MockConfig {
 
-    public static final int DEFAULT_PORT = 8080;
+    public static final int DEFAULT_PORT = 8888;
 
     private static final Set<String> s_valueOptions = new HashSet<String>(Arrays.asList("-p", "--port", "--https-port", "-b", "--bind", "--keystore", "--keystore-password", "--watsonx-apikey",
         "--openai-api-key", "--openai-flavor", "--twilio-auth-token", "--token-ttl", "--max-recorded"));
@@ -33,7 +33,7 @@ public final class MockConfig {
     private String m_watsonxApiKey = null;
 
     /**
-     * Parse command-line arguments. Options that take a value accept it either as the next argument or inline ({@code --port=8080}).
+     * Parse command-line arguments. Options that take a value accept it either as the next argument or inline ({@code --port=8888}).
      *
      * @param _args
      *            the command-line arguments
@@ -83,7 +83,7 @@ public final class MockConfig {
             "",
             "Listener options:",
             "  -p, --port <p[,p...]>        HTTP port(s) to listen on (default " + DEFAULT_PORT + ").",
-            "                               e.g. --port 8080,11434,8000,8082 to match toolkit defaults.",
+            "                               e.g. --port 8888,11434,8000,8082 to also use toolkit defaults.",
             "      --https-port <p[,p...]>  HTTPS port(s) to listen on (default: none).",
             "      --keystore <file>        PKCS12/JKS keystore for HTTPS. If omitted while HTTPS is",
             "                               enabled, mock-server.p12 is generated with keytool.",

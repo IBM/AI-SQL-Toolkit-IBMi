@@ -158,14 +158,13 @@ final class KafkaTest extends ToolkitTest {
     }
 
     /**
-     * Both REST Proxy headers must arrive. The HTTP options repeat the "header" key, so likely only one survives.
+     * Both REST Proxy headers must arrive. The HTTP options repeat the "header" key; QSYS2 accepts repeated keys and sends both headers (verified on IBM i 7.5, see #51).
      *
      * @throws Exception
      *             if the call or the mock inspection fails
      */
     @Test
-    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
-    @DisplayName("publish sends the REST Proxy Content-Type and Accept headers [known issue #51]")
+    @DisplayName("publish sends the REST Proxy Content-Type and Accept headers")
     void sendsRestProxyHeaders() throws Exception {
         publish("header check", "k");
         final JsonNode request = lastRequest("kafka");

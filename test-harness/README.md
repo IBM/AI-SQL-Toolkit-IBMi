@@ -10,7 +10,7 @@ accounts or API keys are needed.
 
 - Java 8 or newer. Built with Maven into a single runnable jar.
 - Runs on any machine that can reach the Mapepire server, including the IBM i itself.
-- 131 tests, covering every HTTP-calling toolkit function and its configuration.
+- 136 tests, covering every HTTP-calling toolkit function and its configuration.
 
 ## How it fits together
 
@@ -31,9 +31,9 @@ and the harness on the IBM i, and everything is `localhost`.
 1. **The toolkit is installed** in schema `DBSDK_V1` (see the root `makefile`). The admin
    procedures in `src/admin/sql` are optional; their tests are skipped if they're not installed.
 2. **mapepire-server is running.** The default is `localhost:8076`.
-3. **The mock server is running** somewhere the IBM i can reach, by default `localhost:8080`:
+3. **The mock server is running** somewhere the IBM i can reach, by default `localhost:8888`:
    ```sh
-   java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080
+   java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8888
    ```
 4. **The user profile** you connect as needs `*EXECUTE` on the toolkit's routines and
    `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `DBSDK_V1.CONF`, plus `READ`/`WRITE` on its global
@@ -46,7 +46,7 @@ and the harness on the IBM i, and everything is `localhost`.
 From the repository root on IBM i, `make test` does everything:
 1. Builds the toolkit into `DBSDK_V1`.
 2. Builds the mock server and this harness with `/QOpenSys/pkgs/bin/mvn`.
-3. Starts the mock on `127.0.0.1:8080` and runs the suite against mapepire-server on `localhost:8076`.
+3. Starts the mock on `127.0.0.1:8888` and runs the suite against mapepire-server on `localhost:8076`.
 4. Stops the mock again.
 
 For unattended runs, put the credentials in `.dbsdk-test.env` in the repository root (git ignores
@@ -101,7 +101,7 @@ Other common runs:
 java -jar dbsdk-test-harness-...jar --insecure
 
 # Harness on a workstation, mapepire and mock on the IBM i
-java -jar dbsdk-test-harness-...jar --host myibmi --mock-url http://myibmi:8080
+java -jar dbsdk-test-harness-...jar --host myibmi --mock-url http://myibmi:8888
 
 # Only the OpenAI-compatible tests, with JUnit XML reports
 java -jar dbsdk-test-harness-...jar --only openai --report-dir reports
@@ -133,7 +133,7 @@ skipped.
 | `--insecure` | off | Don't verify the Mapepire server's TLS certificate |
 | `--query-timeout <s>` | `120` | Per-statement timeout |
 | `--mock-host <host>` | `localhost` | Mock server host **as the IBM i sees it** |
-| `--mock-port <port>` | `8080` | Mock server port |
+| `--mock-port <port>` | `8888` | Mock server port |
 | `--mock-url <url>` | `http://<mock-host>:<mock-port>` | Mock server URL as this machine sees it |
 | `--skip <tags>` | none | Skip tests with these tags |
 | `--only <tags>` | all | Run only tests with these tags |
@@ -171,7 +171,8 @@ until the bug is fixed, and you can leave them out with `--skip known-issue`:
 | Slack: error text is raised with SQLSTATE 38002 | #48 |
 | watsonx: `GetUrl` includes a version by default; `wx_generate` works without setting `wx_apiVersion` | #49 |
 | Twilio: `+` in E.164 numbers is preserved | #50 |
-| Kafka: REST Proxy `Content-Type` and `Accept` headers are both sent | #51 |
+| OpenAI-compatible: fractional `temperature`, `top_p` and penalties are sent unchanged (8 tests) | #52 |
+| Twilio: `twilio_sendsms` works with an `http` base URL, such as the mock (2 tests) | #54 |
 | Kafka: the per-record error is returned to the caller, as documented | none yet |
 | `json_object_update`: update values overwrite base values; two NULLs give `{}` | none yet |
 

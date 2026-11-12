@@ -16,7 +16,7 @@ import java.util.Set;
 public final class HarnessConfig {
 
     public static final int DEFAULT_MAPEPIRE_PORT = 8076;
-    public static final int DEFAULT_MOCK_PORT = 8080;
+    public static final int DEFAULT_MOCK_PORT = 8888;
     public static final int DEFAULT_QUERY_TIMEOUT_SECONDS = 120;
     /** Tag for tests that fail until an open toolkit bug is fixed. */
     public static final String TAG_KNOWN_ISSUE = "known-issue";
@@ -251,7 +251,7 @@ public final class HarnessConfig {
     }
 
     /**
-     * @return the base URL of the mock server as the IBM i sees it, e.g. {@code http://localhost:8080}
+     * @return the base URL of the mock server as the IBM i sees it, e.g. {@code http://localhost:8888}
      */
     public String getMockBaseUrlForIbmi() {
         return "http://" + m_mockHost + ":" + m_mockPort;
