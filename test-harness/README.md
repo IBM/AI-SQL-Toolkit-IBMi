@@ -28,8 +28,8 @@ and the harness on the IBM i, and everything is `localhost`.
 
 ## Prerequisites
 
-1. **The toolkit is installed** in schema `DBSDK_V1` (see the root `makefile`). The admin
-   procedures in `src/admin/sql` are optional; their tests are skipped if they're not installed.
+1. **The toolkit is installed** in schema `DBSDK_V1` (see the root `makefile`, which also builds
+   the `CONF_*` admin procedures from `src/admin/sql`; their tests are skipped if they're missing).
 2. **mapepire-server is running.** The default is `localhost:8076`.
 3. **The mock server is running** somewhere the IBM i can reach, by default `localhost:8888`:
    ```sh

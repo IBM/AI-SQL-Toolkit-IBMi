@@ -35,6 +35,10 @@ final class ConfTest extends ToolkitTest {
 
     /** A fictional user profile used to check that one user's changes do not touch another's row. */
     private static final String OTHER_USER = "HARNESSX1";
+    /**
+     * Cast for the admin procedures' string parameters. Smaller than {@link #STR}: a CALL with several varchar(32000) markers exceeds Db2's limit on total parameter length (SQL0101).
+     */
+    private static final String SHORT_STR = "cast(? as varchar(1000) ccsid 1208)";
     private static final String USRPRF_MARKER = "cast(? as varchar(10) ccsid 1208)";
 
     private final Set<String> m_integerColumns = new HashSet<String>();
@@ -278,7 +282,7 @@ final class ConfTest extends ToolkitTest {
         final List<Object> params = new ArrayList<Object>();
         params.add(m_user);
         for (final Object arg : _update.m_args) {
-            markers.append(", ").append(arg instanceof Integer ? INT : STR);
+            markers.append(", ").append(arg instanceof Integer ? INT : SHORT_STR);
             params.add(arg);
         }
         call(_update.m_procedure + "(" + markers + ")", params.toArray());
