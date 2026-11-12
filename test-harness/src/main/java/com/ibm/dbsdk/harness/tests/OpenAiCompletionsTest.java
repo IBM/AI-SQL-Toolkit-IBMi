@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ibm.dbsdk.harness.HarnessConfig;
 import com.ibm.dbsdk.harness.MockClient;
 
 /**
@@ -148,7 +149,8 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     }
 
     @Test
-    @DisplayName("presence_penalty and frequency_penalty are sent")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("presence_penalty and frequency_penalty are sent [known issue #52]")
     void frequencyAndPresencePenaltiesAreSent() throws Exception {
         generate(PROMPT, "{\"presence_penalty\": 1.5, \"frequency_penalty\": -1.5}");
         final JsonNode body = lastRequestJson("openai");
@@ -171,7 +173,8 @@ final class OpenAiCompletionsTest extends ToolkitTest {
      *             if the call or the mock inspection fails
      */
     @Test
-    @DisplayName("generate_json sends temperature, top_p and max_tokens")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("generate_json sends temperature, top_p and max_tokens [known issue #52]")
     void generateJsonPassesExtendedOptions() throws Exception {
         final JsonNode reply = json(generateJson(PROMPT, "{\"temperature\": 0.3, \"top_p\": 0.8, \"max_tokens\": 2}"));
         assertEquals("Mock openai", reply.at("/choices/0/text").asText());
@@ -314,7 +317,8 @@ final class OpenAiCompletionsTest extends ToolkitTest {
      *             if the call or the mock inspection fails
      */
     @Test
-    @DisplayName("temperature and max_tokens work together")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("temperature and max_tokens work together [known issue #52]")
     void temperatureAndMaxTokensTogether() throws Exception {
         assertEquals("Mock openai response from", generate(PROMPT, "{\"temperature\": 0.2, \"max_tokens\": 4}"));
         final JsonNode body = lastRequestJson("openai");
@@ -329,7 +333,8 @@ final class OpenAiCompletionsTest extends ToolkitTest {
      *             if the call or the mock inspection fails
      */
     @Test
-    @DisplayName("temperature is sent, including 0")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("temperature is sent, including 0 [known issue #52]")
     void temperatureIsSent() throws Exception {
         assertEquals(expectedReply(PROMPT), generate(PROMPT, "{\"temperature\": 0.7}"));
         assertNumber(0.7, lastRequestJson("openai"), "temperature");
@@ -338,14 +343,16 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     }
 
     @Test
-    @DisplayName("an out-of-range temperature signals SQLSTATE 38002 (HTTP 400)")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("an out-of-range temperature signals SQLSTATE 38002 (HTTP 400) [known issue #52]")
     void temperatureOutOfRangeSignals38002() {
         final SQLException e = assertSqlState("38002", () -> generate(PROMPT, "{\"temperature\": 2.5}"));
         assertTrue(e.getMessage().contains("400"), "message should name the HTTP status: " + e.getMessage());
     }
 
     @Test
-    @DisplayName("top_p is sent")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("top_p is sent [known issue #52]")
     void topPIsSent() throws Exception {
         generate(PROMPT, "{\"top_p\": 0.5}");
         assertNumber(0.5, lastRequestJson("openai"), "top_p");

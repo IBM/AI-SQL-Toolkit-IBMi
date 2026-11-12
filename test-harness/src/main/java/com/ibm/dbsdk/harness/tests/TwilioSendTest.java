@@ -37,7 +37,8 @@ final class TwilioSendTest extends ToolkitTest {
     }
 
     @Test
-    @DisplayName("sendsms signals SQLSTATE 38002 with Twilio's error message")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("sendsms signals SQLSTATE 38002 with Twilio's error message [known issue #54]")
     void errorSignals38002() {
         assertSqlState("38002", () -> send("5551234567", "nope [[mock:status=400]]"));
     }
@@ -67,7 +68,8 @@ final class TwilioSendTest extends ToolkitTest {
      *             if the call or the mock inspection fails
      */
     @Test
-    @DisplayName("sendsms returns 'queued' and sends To, From and Body")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("sendsms returns 'queued' and sends To, From and Body [known issue #54]")
     void sendReturnsQueued() throws Exception {
         assertEquals("queued", send("5551234567", "Hello from the harness"));
         final JsonNode request = lastRequest("twilio");

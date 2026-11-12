@@ -2,11 +2,11 @@
 -- End-to-end exercise of the dbsdk_v1 toolkit against the dbsdk mock server.
 --
 -- 1. Start the mock somewhere the IBM i can reach (it can also run ON the IBM i, Java 8+):
---      java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8080 --https-port 443
+--      java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8888 --https-port 443
 -- 2. Replace every MOCKHOST below with the host name / IP address of the machine running it.
 -- 3. Run the statements one at a time (e.g. from VS Code for IBM i / ACS Run SQL Scripts).
 --    The expected result is noted above each statement.
--- 4. Inspect what the toolkit actually sent:  http://MOCKHOST:8080/mock/requests
+-- 4. Inspect what the toolkit actually sent:  http://MOCKHOST:8888/mock/requests
 --
 -- Prompt directives let you exercise error paths from SQL:
 --   [[mock:status=500]]  [[mock:delay=2000]]  [[mock:reply=text]]  [[mock:malformed]]
@@ -18,7 +18,7 @@
 -- ---------------------------------------------------------------------------------------------
 call dbsdk_v1.ollama_setprotocolforjob('http');
 call dbsdk_v1.ollama_setserverforjob('MOCKHOST');
-call dbsdk_v1.ollama_setportforjob(8080);
+call dbsdk_v1.ollama_setportforjob(8888);
 call dbsdk_v1.ollama_setmodelforjob('granite3.2:8b');
 
 -- Expected: Mock ollama response from granite3.2:8b: Why is the sky blue?
@@ -36,7 +36,7 @@ values dbsdk_v1.ollama_generate('Fail please [[mock:status=500]]');
 -- ---------------------------------------------------------------------------------------------
 call dbsdk_v1.openai_compatible_setprotocolforjob('http');
 call dbsdk_v1.openai_compatible_setserverforjob('MOCKHOST');
-call dbsdk_v1.openai_compatible_setportforjob(8080);
+call dbsdk_v1.openai_compatible_setportforjob(8888);
 call dbsdk_v1.openai_compatible_setbasepathforjob('/v1');
 call dbsdk_v1.openai_compatible_setmodelforjob('llama3');
 -- Only needed if the mock was started with --openai-api-key sk-test
@@ -60,7 +60,7 @@ values dbsdk_v1.openai_compatible_chat_generate('Hello Gemini');
 
 -- Expected: Mock chat response from gemini-2.0-flash: Hi   (base_url overrides the job settings)
 values dbsdk_v1.openai_compatible_chat_generate('Hi', '{"model_id": "gemini-2.0-flash", "temperature": 0.2}',
-                                                NULL, 'http://MOCKHOST:8080/v1beta/openai');
+                                                NULL, 'http://MOCKHOST:8888/v1beta/openai');
 
 -- Expected: SQLSTATE 38002 ("HTTP response code was 429")
 values dbsdk_v1.openai_compatible_chat_generate('rate limit me [[mock:status=429]]');
@@ -74,10 +74,10 @@ values dbsdk_v1.openai_compatible_chat_generate('rate limit me [[mock:status=429
 -- ---------------------------------------------------------------------------------------------
 call dbsdk_v1.kafka_setprotocolforjob('http');
 call dbsdk_v1.kafka_setbrokerforjob('MOCKHOST');
-call dbsdk_v1.kafka_setportforjob(8080);
+call dbsdk_v1.kafka_setportforjob(8888);
 call dbsdk_v1.kafka_settopicforjob('orders');
 
--- Expected: NULL (success). Then GET http://MOCKHOST:8080/mock/kafka shows the record.
+-- Expected: NULL (success). Then GET http://MOCKHOST:8888/mock/kafka shows the record.
 values dbsdk_v1.kafka_publish('{"order": 1001, "status": "shipped"}', key => 'order-1001');
 
 -- Expected: NULL, published to topic "audit"
@@ -90,7 +90,7 @@ values dbsdk_v1.kafka_publish('broker down [[mock:status=503]]');
 -- ---------------------------------------------------------------------------------------------
 -- Slack (incoming webhook)
 -- ---------------------------------------------------------------------------------------------
-call dbsdk_v1.slack_setwebhookforjob('http://MOCKHOST:8080/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
+call dbsdk_v1.slack_setwebhookforjob('http://MOCKHOST:8888/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX');
 
 -- Expected: ok
 values dbsdk_v1.slack_sendmessage('Hello from IBM i!');
@@ -106,11 +106,11 @@ values dbsdk_v1.slack_sendmessage('nope [[mock:status=403]]');
 -- https://api.twilio.com by default. Point them at the mock with their base URL settings.
 -- (Toolkit builds without these settings need host redirection instead; see the mock README.)
 -- ---------------------------------------------------------------------------------------------
-call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8080');
-call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8080');
-call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8080');
+call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8888');
+call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8888');
+call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8888');
 
--- Expected: http://MOCKHOST:8080 for both
+-- Expected: http://MOCKHOST:8888 for both
 values (dbsdk_v1.wx_GetIamBaseUrl(), dbsdk_v1.wx_GetMlBaseUrl());
 
 set dbsdk_v1.wx_region = 'us-south';

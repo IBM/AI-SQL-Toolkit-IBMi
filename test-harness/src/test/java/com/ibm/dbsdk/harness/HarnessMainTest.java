@@ -54,11 +54,17 @@ class HarnessMainTest {
         }
     }
 
+    /**
+     * --only selects the tests with that tag; some of them may also be tagged known-issue.
+     */
     @Test
     void onlySelectsTaggedTests() {
         final Discovery d = discover("--only", "openai");
         assertTrue(d.m_count > 30, "found " + d.m_count);
-        assertEquals(1, d.m_tags.size(), d.m_tags.toString());
+        final Set<String> others = new HashSet<String>(d.m_tags);
+        others.remove("openai");
+        others.remove(HarnessConfig.TAG_KNOWN_ISSUE);
+        assertTrue(d.m_tags.contains("openai") && others.isEmpty(), d.m_tags.toString());
     }
 
     @Test

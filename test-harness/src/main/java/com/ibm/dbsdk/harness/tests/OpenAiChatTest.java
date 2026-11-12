@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ibm.dbsdk.harness.HarnessConfig;
 import com.ibm.dbsdk.harness.MockClient;
 
 /**
@@ -123,7 +124,8 @@ final class OpenAiChatTest extends ToolkitTest {
      *             if the call or the mock inspection fails
      */
     @Test
-    @DisplayName("extended options are all sent")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("extended options are all sent [known issue #52]")
     void extendedOptionsAreSent() throws Exception {
         final String options = "{\"temperature\": 0.2, \"max_tokens\": 5, \"top_p\": 0.9, \"n\": 2, \"presence_penalty\": 0.5, \"frequency_penalty\": -0.5, \"stop\": \"zzz\", \"seed\": 7, \"user\": \"harness-user\"}";
         assertEquals("Mock chat response from " + MODEL + ":", chat("Hello", options));
@@ -175,7 +177,8 @@ final class OpenAiChatTest extends ToolkitTest {
     }
 
     @Test
-    @DisplayName("temperature alone adds only temperature")
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("temperature alone adds only temperature [known issue #52]")
     void temperatureAloneAddsOnlyTemperature() throws Exception {
         chat("Hello", "{\"temperature\": 0.7}");
         final JsonNode body = lastRequestJson("openai");

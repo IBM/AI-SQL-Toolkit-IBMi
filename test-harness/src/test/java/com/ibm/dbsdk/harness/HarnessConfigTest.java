@@ -21,8 +21,8 @@ class HarnessConfigTest {
     void defaults() {
         final HarnessConfig c = HarnessConfig.parse(new String[0]);
         assertEquals("jdbc:mapepire://localhost:8076", c.getJdbcUrl());
-        assertEquals("http://localhost:8080", c.getMockBaseUrlForIbmi());
-        assertEquals("http://localhost:8080", c.getMockUrl());
+        assertEquals("http://localhost:8888", c.getMockBaseUrlForIbmi());
+        assertEquals("http://localhost:8888", c.getMockUrl());
         assertNull(c.getUser());
         assertNull(c.getPassword());
         assertFalse(c.isInsecure());
