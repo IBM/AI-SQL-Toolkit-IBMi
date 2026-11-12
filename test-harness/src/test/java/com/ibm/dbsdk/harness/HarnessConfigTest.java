@@ -31,6 +31,15 @@ class HarnessConfigTest {
     }
 
     /**
+     * The password never appears in parse errors, even when it is malformed input to another option.
+     */
+    @Test
+    void parseErrorsDoNotEchoPassword() {
+        final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> HarnessConfig.parse(new String[] { "--password", "s3cr3t-value", "--bogus" }));
+        assertFalse(e.getMessage().contains("s3cr3t-value"));
+    }
+
+    /**
      * Every option is parsed, in both separate and inline forms.
      */
     @Test
@@ -58,15 +67,6 @@ class HarnessConfigTest {
         assertThrows(IllegalArgumentException.class, () -> HarnessConfig.parse(new String[] { "--host" }));
         assertThrows(IllegalArgumentException.class, () -> HarnessConfig.parse(new String[] { "--port", "70000" }));
         assertThrows(IllegalArgumentException.class, () -> HarnessConfig.parse(new String[] { "--query-timeout", "0" }));
-    }
-
-    /**
-     * The password never appears in parse errors, even when it is malformed input to another option.
-     */
-    @Test
-    void parseErrorsDoNotEchoPassword() {
-        final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> HarnessConfig.parse(new String[] { "--password", "s3cr3t-value", "--bogus" }));
-        assertFalse(e.getMessage().contains("s3cr3t-value"));
     }
 
     /**

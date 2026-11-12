@@ -18,12 +18,39 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 final class Redactor {
 
     static final String MASK = "****";
+
     private static final String SLACK_PREFIX = "/services/";
 
     private static final Set<String> s_secretFields = new HashSet<String>(Arrays.asList("access_token", "refresh_token", "apikey", "api_key", "client_secret", "password", "authtoken", "token"));
+
     private static final Set<String> s_secretHeaders = new HashSet<String>(Arrays.asList("authorization", "proxy-authorization", "x-api-key", "api-key"));
 
     private Redactor() {
+    }
+
+    /**
+     * Recursively mask secret fields of an object or array node in place.
+     *
+     * @param _node
+     *            the node to modify
+     */
+    private static void maskInPlace(final JsonNode _node) {
+        if (_node.isObject()) {
+            final ObjectNode obj = (ObjectNode) _node;
+            final Iterator<Map.Entry<String, JsonNode>> fields = obj.fields();
+            while (fields.hasNext()) {
+                final Map.Entry<String, JsonNode> field = fields.next();
+                if (s_secretFields.contains(field.getKey().toLowerCase(Locale.ROOT)) && field.getValue().isValueNode() && !field.getValue().isNull()) {
+                    field.setValue(obj.textNode(MASK));
+                } else {
+                    maskInPlace(field.getValue());
+                }
+            }
+        } else if (_node.isArray()) {
+            for (final JsonNode child : _node) {
+                maskInPlace(child);
+            }
+        }
     }
 
     /**
@@ -125,30 +152,5 @@ final class Redactor {
             return _pathOrUri;
         }
         return path.substring(0, lastSlash + 1) + MASK + query;
-    }
-
-    /**
-     * Recursively mask secret fields of an object or array node in place.
-     *
-     * @param _node
-     *            the node to modify
-     */
-    private static void maskInPlace(final JsonNode _node) {
-        if (_node.isObject()) {
-            final ObjectNode obj = (ObjectNode) _node;
-            final Iterator<Map.Entry<String, JsonNode>> fields = obj.fields();
-            while (fields.hasNext()) {
-                final Map.Entry<String, JsonNode> field = fields.next();
-                if (s_secretFields.contains(field.getKey().toLowerCase(Locale.ROOT)) && field.getValue().isValueNode() && !field.getValue().isNull()) {
-                    field.setValue(obj.textNode(MASK));
-                } else {
-                    maskInPlace(field.getValue());
-                }
-            }
-        } else if (_node.isArray()) {
-            for (final JsonNode child : _node) {
-                maskInPlace(child);
-            }
-        }
     }
 }

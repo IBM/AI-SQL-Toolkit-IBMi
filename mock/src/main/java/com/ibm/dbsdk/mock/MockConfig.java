@@ -18,18 +18,31 @@ public final class MockConfig {
         "--openai-api-key", "--openai-flavor", "--twilio-auth-token", "--token-ttl", "--max-recorded"));
 
     private String m_bindAddress = "0.0.0.0";
+
     private boolean m_help = false;
+
     private final List<Integer> m_httpPorts = new ArrayList<Integer>();
+
     private final List<Integer> m_httpsPorts = new ArrayList<Integer>();
+
     private String m_keystorePassword = "changeit";
+
     private String m_keystorePath = null;
+
     private int m_maxRecordedRequests = 1000;
+
     private String m_openAiApiKey = null;
+
     private OpenAiFlavor m_openAiFlavor = OpenAiFlavor.OPENAI;
+
     private boolean m_quiet = false;
+
     private int m_tokenTtlSeconds = 3600;
+
     private String m_twilioAuthToken = null;
+
     private boolean m_version = false;
+
     private String m_watsonxApiKey = null;
 
     /**
@@ -68,52 +81,6 @@ public final class MockConfig {
             i++;
         }
         return config;
-    }
-
-    /**
-     * @return the command-line help text
-     */
-    public static String usage() {
-        //@formatter:off
-        return String.join(System.lineSeparator(),
-            "Usage: java -jar dbsdk-mock-server-<version>-jar-with-dependencies.jar [options]",
-            "",
-            "Mock server for every external service used by the AI-SDK-Db2-IBMi (dbsdk_v1) toolkit.",
-            "All services are served from the same listener(s), routed by URL path.",
-            "",
-            "Listener options:",
-            "  -p, --port <p[,p...]>        HTTP port(s) to listen on (default " + DEFAULT_PORT + ").",
-            "                               e.g. --port 8888,11434,8000,8082 to also use toolkit defaults.",
-            "      --https-port <p[,p...]>  HTTPS port(s) to listen on (default: none).",
-            "      --keystore <file>        PKCS12/JKS keystore for HTTPS. If omitted while HTTPS is",
-            "                               enabled, mock-server.p12 is generated with keytool.",
-            "      --keystore-password <pw> Keystore password (default: changeit).",
-            "  -b, --bind <address>         Address to bind to (default: 0.0.0.0).",
-            "",
-            "Credential options (when omitted, any non-empty credential is accepted):",
-            "      --watsonx-apikey <key>   The only IBM Cloud API key IAM will accept.",
-            "      --openai-api-key <key>   Bearer key required by the OpenAI-compatible endpoints.",
-            "      --twilio-auth-token <t>  Twilio auth token required for HTTP Basic auth.",
-            "",
-            "Behaviour options:",
-            "      --openai-flavor <f>      openai (default) or gemini. gemini rejects the legacy",
-            "                               /completions endpoint and unknown chat request fields.",
-            "      --token-ttl <seconds>    Lifetime of issued watsonx tokens (default 3600).",
-            "      --max-recorded <n>       Max requests kept for /mock/requests (default 1000).",
-            "  -q, --quiet                  Do not log each request to stdout.",
-            "      --version                Print the version and exit.",
-            "  -h, --help                   Print this help and exit.",
-            "",
-            "Prompt directives (embed in any prompt/message text to steer the mock):",
-            "  [[mock:status=503]]          Respond with the given HTTP status and a service-style error.",
-            "  [[mock:delay=1500]]          Sleep for the given milliseconds before responding.",
-            "  [[mock:reply=some text]]     Use this exact text as the generated reply.",
-            "  [[mock:malformed]]           Return 200 with a body missing the expected fields.",
-            "  [[mock:record-error]]        Kafka only: 200 with an error in offsets[0].",
-            "",
-            "Inspection endpoints: GET /mock/health, GET|DELETE /mock/requests, GET /mock/kafka,",
-            "                      POST /mock/reset, POST /mock/shutdown");
-        //@formatter:on
     }
 
     /**
@@ -170,6 +137,52 @@ public final class MockConfig {
             throw new IllegalArgumentException(_option + " requires a positive integer, got: " + _value);
         }
         return value;
+    }
+
+    /**
+     * @return the command-line help text
+     */
+    public static String usage() {
+        //@formatter:off
+        return String.join(System.lineSeparator(),
+            "Usage: java -jar dbsdk-mock-server-<version>-jar-with-dependencies.jar [options]",
+            "",
+            "Mock server for every external service used by the AI-SDK-Db2-IBMi (dbsdk_v1) toolkit.",
+            "All services are served from the same listener(s), routed by URL path.",
+            "",
+            "Listener options:",
+            "  -p, --port <p[,p...]>        HTTP port(s) to listen on (default " + DEFAULT_PORT + ").",
+            "                               e.g. --port 8888,11434,8000,8082 to also use toolkit defaults.",
+            "      --https-port <p[,p...]>  HTTPS port(s) to listen on (default: none).",
+            "      --keystore <file>        PKCS12/JKS keystore for HTTPS. If omitted while HTTPS is",
+            "                               enabled, mock-server.p12 is generated with keytool.",
+            "      --keystore-password <pw> Keystore password (default: changeit).",
+            "  -b, --bind <address>         Address to bind to (default: 0.0.0.0).",
+            "",
+            "Credential options (when omitted, any non-empty credential is accepted):",
+            "      --watsonx-apikey <key>   The only IBM Cloud API key IAM will accept.",
+            "      --openai-api-key <key>   Bearer key required by the OpenAI-compatible endpoints.",
+            "      --twilio-auth-token <t>  Twilio auth token required for HTTP Basic auth.",
+            "",
+            "Behaviour options:",
+            "      --openai-flavor <f>      openai (default) or gemini. gemini rejects the legacy",
+            "                               /completions endpoint and unknown chat request fields.",
+            "      --token-ttl <seconds>    Lifetime of issued watsonx tokens (default 3600).",
+            "      --max-recorded <n>       Max requests kept for /mock/requests (default 1000).",
+            "  -q, --quiet                  Do not log each request to stdout.",
+            "      --version                Print the version and exit.",
+            "  -h, --help                   Print this help and exit.",
+            "",
+            "Prompt directives (embed in any prompt/message text to steer the mock):",
+            "  [[mock:status=503]]          Respond with the given HTTP status and a service-style error.",
+            "  [[mock:delay=1500]]          Sleep for the given milliseconds before responding.",
+            "  [[mock:reply=some text]]     Use this exact text as the generated reply.",
+            "  [[mock:malformed]]           Return 200 with a body missing the expected fields.",
+            "  [[mock:record-error]]        Kafka only: 200 with an error in offsets[0].",
+            "",
+            "Inspection endpoints: GET /mock/health, GET|DELETE /mock/requests, GET /mock/kafka,",
+            "                      POST /mock/reset, POST /mock/shutdown");
+        //@formatter:on
     }
 
     public MockConfig addHttpPort(final int _port) {

@@ -31,6 +31,21 @@ final class OpenAiChatTest extends ToolkitTest {
     private static final String MODEL = "llama3";
 
     /**
+     * @param _body
+     *            a JSON object
+     * @return its field names, sorted
+     */
+    private static List<String> fieldNames(final JsonNode _body) {
+        final List<String> names = new ArrayList<String>();
+        final Iterator<String> it = _body.fieldNames();
+        while (it.hasNext()) {
+            names.add(it.next());
+        }
+        Collections.sort(names);
+        return names;
+    }
+
+    /**
      * Point this job's OpenAI-compatible settings at the mock server.
      *
      * @throws SQLException
@@ -44,21 +59,6 @@ final class OpenAiChatTest extends ToolkitTest {
         call("openai_compatible_setbasepathforjob(" + STR + ")", "/v1");
         call("openai_compatible_setmodelforjob(" + STR + ")", MODEL);
         call("openai_compatible_setapikeyforjob(" + STR + ")", "harness-key");
-    }
-
-    /**
-     * @param _body
-     *            a JSON object
-     * @return its field names, sorted
-     */
-    private static List<String> fieldNames(final JsonNode _body) {
-        final List<String> names = new ArrayList<String>();
-        final Iterator<String> it = _body.fieldNames();
-        while (it.hasNext()) {
-            names.add(it.next());
-        }
-        Collections.sort(names);
-        return names;
     }
 
     @Test

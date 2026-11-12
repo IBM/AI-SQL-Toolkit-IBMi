@@ -20,7 +20,9 @@ import com.ibm.dbsdk.mock.MockState;
 public final class TwilioHandler extends ServiceHandler {
 
     private static final int MAX_BODY_LENGTH = 1600;
+
     private static final String MESSAGES_SUFFIX = "/Messages.json";
+
     private static final String PREFIX = "/2010-04-01/Accounts/";
 
     private static final DateTimeFormatter s_rfc2822 = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
@@ -67,23 +69,6 @@ public final class TwilioHandler extends ServiceHandler {
         return _status >= 500 ? 20500 : 20001;
     }
 
-    /**
-     * Check HTTP Basic credentials: the user must be the account SID from the path, and the password must match {@code --twilio-auth-token} when configured.
-     *
-     * @param _call
-     *            the call to check
-     * @param _sid
-     *            the account SID from the path
-     * @return true if the credentials are accepted
-     */
-    private boolean areCredentialsValid(final HttpCall _call, final String _sid) {
-        final String[] creds = _call.getBasicCredentials();
-        if (null == creds || !_sid.equals(creds[0]) || isBlank(creds[1])) {
-            return false;
-        }
-        return null == m_config.getTwilioAuthToken() || m_config.getTwilioAuthToken().equals(creds[1]);
-    }
-
     @Override
     public String getServiceName() {
         return "twilio";
@@ -109,7 +94,7 @@ public final class TwilioHandler extends ServiceHandler {
             error(_call, 405, 20004, "Method not allowed");
             return;
         }
-        if (!areCredentialsValid(_call, sid)) {
+        if (!hasValidCredentials(_call, sid)) {
             error(_call, 401, 20003, "Authenticate");
             return;
         }
@@ -132,6 +117,23 @@ public final class TwilioHandler extends ServiceHandler {
         } else {
             _call.sendJson(201, messageResource(sid, form, directives));
         }
+    }
+
+    /**
+     * Check HTTP Basic credentials: the user must be the account SID from the path, and the password must match {@code --twilio-auth-token} when configured.
+     *
+     * @param _call
+     *            the call to check
+     * @param _sid
+     *            the account SID from the path
+     * @return true if the credentials are accepted
+     */
+    private boolean hasValidCredentials(final HttpCall _call, final String _sid) {
+        final String[] creds = _call.getBasicCredentials();
+        if (null == creds || !_sid.equals(creds[0]) || isBlank(creds[1])) {
+            return false;
+        }
+        return null == m_config.getTwilioAuthToken() || m_config.getTwilioAuthToken().equals(creds[1]);
     }
 
     /**

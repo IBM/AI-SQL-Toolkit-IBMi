@@ -23,29 +23,6 @@ public final class Json {
     }
 
     /**
-     * Read a boolean field, accepting JSON booleans as well as the strings "true" and "false".
-     *
-     * @param _node
-     *            the object to read from; may be null
-     * @param _field
-     *            the field name
-     * @return the field's value, or false when it is missing, null or not boolean-like
-     */
-    public static boolean bool(final JsonNode _node, final String _field) {
-        if (null == _node) {
-            return false;
-        }
-        final JsonNode value = _node.get(_field);
-        if (null == value || value.isNull()) {
-            return false;
-        }
-        if (value.isBoolean()) {
-            return value.asBoolean();
-        }
-        return "true".equalsIgnoreCase(value.asText().trim());
-    }
-
-    /**
      * Read an integer field. Accepts JSON numbers and numeric strings, because Db2's {@code JSON_UPDATE} may store numbers either way.
      *
      * @param _node
@@ -57,6 +34,29 @@ public final class Json {
     public static Integer integer(final JsonNode _node, final String _field) {
         final Double value = number(_node, _field);
         return null == value ? null : Integer.valueOf(value.intValue());
+    }
+
+    /**
+     * Read a boolean field, accepting JSON booleans as well as the strings "true" and "false".
+     *
+     * @param _node
+     *            the object to read from; may be null
+     * @param _field
+     *            the field name
+     * @return the field's value, or false when it is missing, null or not boolean-like
+     */
+    public static boolean isTrue(final JsonNode _node, final String _field) {
+        if (null == _node) {
+            return false;
+        }
+        final JsonNode value = _node.get(_field);
+        if (null == value || value.isNull()) {
+            return false;
+        }
+        if (value.isBoolean()) {
+            return value.asBoolean();
+        }
+        return "true".equalsIgnoreCase(value.asText().trim());
     }
 
     /**

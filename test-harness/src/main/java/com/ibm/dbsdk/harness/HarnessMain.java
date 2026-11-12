@@ -33,11 +33,15 @@ import com.github.theprez.jcmdutils.ConsoleQuestionAsker;
 public final class HarnessMain {
 
     public static final int EXIT_FAILURES = 1;
+
     public static final int EXIT_OK = 0;
+
     public static final int EXIT_USAGE = 2;
 
     static final String ENV_PASSWORD = "MAPEPIRE_PASSWORD";
+
     static final String ENV_USER = "MAPEPIRE_USER";
+
     static final String TESTS_PACKAGE = "com.ibm.dbsdk.harness.tests";
 
     private HarnessMain() {
@@ -61,6 +65,31 @@ public final class HarnessMain {
             builder.filters(TagFilter.excludeTags(new ArrayList<String>(excluded)));
         }
         return builder.build();
+    }
+
+    /**
+     * Ask the IBM i itself to fetch the mock's health endpoint, since it is the IBM i, not this machine, that the toolkit's HTTP calls come from. Problems are reported as warnings.
+     *
+     * @param _db
+     *            an open connection
+     * @param _config
+     *            the run configuration
+     * @param _logger
+     *            the console logger
+     */
+    private static void checkMockFromIbmi(final Db _db, final HarnessConfig _config, final AppLogger _logger) {
+        final String url = _config.getMockBaseUrlForIbmi() + "/mock/health";
+        try {
+            final String health = _db.queryString("values qsys2.http_get(cast(? as varchar(1000) ccsid 1208))", url);
+            if (null != health && health.contains("\"UP\"")) {
+                _logger.printfln("Mock server reachable from the IBM i at %s", _config.getMockBaseUrlForIbmi());
+            } else {
+                _logger.printfln_warn("Unexpected mock health response from the IBM i: %s", health);
+            }
+        } catch (final SQLException _e) {
+            _logger.printfln_warn("The IBM i could not reach the mock server at %s: %s", url, _e.getMessage());
+            _logger.println_warn("Most toolkit tests will fail. Start the mock on a host the IBM i can reach and set --mock-host/--mock-port.");
+        }
     }
 
     /**
@@ -173,31 +202,6 @@ public final class HarnessMain {
             _logger.println_warn("Tests still run, but checks of what the toolkit sent will be skipped. Use --mock-url to fix.");
         }
         return true;
-    }
-
-    /**
-     * Ask the IBM i itself to fetch the mock's health endpoint, since it is the IBM i, not this machine, that the toolkit's HTTP calls come from. Problems are reported as warnings.
-     *
-     * @param _db
-     *            an open connection
-     * @param _config
-     *            the run configuration
-     * @param _logger
-     *            the console logger
-     */
-    private static void checkMockFromIbmi(final Db _db, final HarnessConfig _config, final AppLogger _logger) {
-        final String url = _config.getMockBaseUrlForIbmi() + "/mock/health";
-        try {
-            final String health = _db.queryString("values qsys2.http_get(cast(? as varchar(1000) ccsid 1208))", url);
-            if (null != health && health.contains("\"UP\"")) {
-                _logger.printfln("Mock server reachable from the IBM i at %s", _config.getMockBaseUrlForIbmi());
-            } else {
-                _logger.printfln_warn("Unexpected mock health response from the IBM i: %s", health);
-            }
-        } catch (final SQLException _e) {
-            _logger.printfln_warn("The IBM i could not reach the mock server at %s: %s", url, _e.getMessage());
-            _logger.println_warn("Most toolkit tests will fail. Start the mock on a host the IBM i can reach and set --mock-host/--mock-port.");
-        }
     }
 
     /**

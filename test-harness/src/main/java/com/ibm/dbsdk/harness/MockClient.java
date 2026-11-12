@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public final class MockClient {
 
     private static final int CONNECT_TIMEOUT_MS = 3000;
+
     private static final int READ_TIMEOUT_MS = 15000;
 
     private static final ObjectMapper s_mapper = new ObjectMapper();
@@ -34,6 +35,39 @@ public final class MockClient {
      */
     public MockClient(final String _baseUrl) {
         m_baseUrl = _baseUrl;
+    }
+
+    /**
+     * @param _text
+     *            a form-encoded token
+     * @return the decoded token
+     */
+    private static String decode(final String _text) {
+        try {
+            return URLDecoder.decode(_text, "UTF-8");
+        } catch (final UnsupportedEncodingException _e) {
+            throw new IllegalStateException("UTF-8 is always supported", _e);
+        }
+    }
+
+    /**
+     * Decode a recorded {@code application/x-www-form-urlencoded} body the way the receiving service would.
+     *
+     * @param _request
+     *            a recorded request
+     * @return the form fields in order
+     */
+    public static Map<String, String> formFields(final JsonNode _request) {
+        final Map<String, String> fields = new LinkedHashMap<String, String>();
+        final String body = _request.path("body").asText("");
+        for (final String pair : body.split("&")) {
+            if (pair.isEmpty()) {
+                continue;
+            }
+            final int eq = pair.indexOf('=');
+            fields.put(decode(eq < 0 ? pair : pair.substring(0, eq)), decode(eq < 0 ? "" : pair.substring(eq + 1)));
+        }
+        return fields;
     }
 
     /**
@@ -58,39 +92,6 @@ public final class MockClient {
     }
 
     /**
-     * Decode a recorded {@code application/x-www-form-urlencoded} body the way the receiving service would.
-     *
-     * @param _request
-     *            a recorded request
-     * @return the form fields in order
-     */
-    public static Map<String, String> formFields(final JsonNode _request) {
-        final Map<String, String> fields = new LinkedHashMap<String, String>();
-        final String body = _request.path("body").asText("");
-        for (final String pair : body.split("&")) {
-            if (pair.isEmpty()) {
-                continue;
-            }
-            final int eq = pair.indexOf('=');
-            fields.put(decode(eq < 0 ? pair : pair.substring(0, eq)), decode(eq < 0 ? "" : pair.substring(eq + 1)));
-        }
-        return fields;
-    }
-
-    /**
-     * @param _text
-     *            a form-encoded token
-     * @return the decoded token
-     */
-    private static String decode(final String _text) {
-        try {
-            return URLDecoder.decode(_text, "UTF-8");
-        } catch (final UnsupportedEncodingException _e) {
-            throw new IllegalStateException("UTF-8 is always supported", _e);
-        }
-    }
-
-    /**
      * Read a response stream fully.
      *
      * @param _in
@@ -103,8 +104,7 @@ public final class MockClient {
         if (null == _in) {
             return "";
         }
-        try (final InputStream in = _in) {
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (final InputStream in = _in; final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             final byte[] buf = new byte[4096];
             int n = in.read(buf);
             while (-1 != n) {
@@ -113,13 +113,6 @@ public final class MockClient {
             }
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
         }
-    }
-
-    /**
-     * @return the base URL this client talks to
-     */
-    public String getBaseUrl() {
-        return m_baseUrl;
     }
 
     /**
@@ -134,6 +127,13 @@ public final class MockClient {
         } catch (final IOException _e) {
             return _e.getClass().getSimpleName() + ": " + _e.getMessage();
         }
+    }
+
+    /**
+     * @return the base URL this client talks to
+     */
+    public String getBaseUrl() {
+        return m_baseUrl;
     }
 
     /**

@@ -93,6 +93,13 @@ final class WatsonxTest extends ToolkitTest {
         }
     }
 
+    @Test
+    @DisplayName("generate without a token signals SQLSTATE 38001")
+    void generateWithoutTokenSignals38001() throws SQLException {
+        call("wx_logoutJob()");
+        assertSqlState("38001", () -> value("dbsdk_v1.wx_generate(" + STR + ")", "Hello"));
+    }
+
     /**
      * With a region and an API version set and no base URL configured, GetUrl builds the regional endpoint with the version query parameter.
      *
@@ -108,6 +115,22 @@ final class WatsonxTest extends ToolkitTest {
         assertEquals("https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
         db().execute("set dbsdk_v1.wx_region = 'us-south'");
         assertEquals("https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
+    }
+
+    /**
+     * The watsonx API requires the version parameter, so GetUrl must supply one even when wx_apiVersion was never set.
+     *
+     * @throws SQLException
+     *             if a call fails
+     */
+    @Test
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("GetUrl includes a version when wx_apiVersion is not set [known issue #49]")
+    void getUrlIncludesVersionByDefault() throws SQLException {
+        db().execute("set dbsdk_v1.wx_region = 'us-south'");
+        db().execute("set dbsdk_v1.wx_apiVersion = NULL");
+        final String url = value("dbsdk_v1.geturl(" + STR + ")", "/text/generation");
+        assertTrue(url.contains("version="), "watsonx requires ?version=, got " + url);
     }
 
     /**
@@ -129,29 +152,6 @@ final class WatsonxTest extends ToolkitTest {
     }
 
     /**
-     * The watsonx API requires the version parameter, so GetUrl must supply one even when wx_apiVersion was never set.
-     *
-     * @throws SQLException
-     *             if a call fails
-     */
-    @Test
-    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
-    @DisplayName("GetUrl includes a version when wx_apiVersion is not set [known issue #49]")
-    void getUrlIncludesVersionByDefault() throws SQLException {
-        db().execute("set dbsdk_v1.wx_region = 'us-south'");
-        db().execute("set dbsdk_v1.wx_apiVersion = NULL");
-        final String url = value("dbsdk_v1.geturl(" + STR + ")", "/text/generation");
-        assertTrue(url.contains("version="), "watsonx requires ?version=, got " + url);
-    }
-
-    @Test
-    @DisplayName("generate without a token signals SQLSTATE 38001")
-    void generateWithoutTokenSignals38001() throws SQLException {
-        call("wx_logoutJob()");
-        assertSqlState("38001", () -> value("dbsdk_v1.wx_generate(" + STR + ")", "Hello"));
-    }
-
-    /**
      * Decimal parameters must come out as valid JSON numbers (e.g. 0.5, not .5).
      *
      * @throws SQLException
@@ -164,6 +164,18 @@ final class WatsonxTest extends ToolkitTest {
         assertNumber(0.5, params, "temperature");
         assertNumber(0.9, params, "top_p");
         assertNumber(0.1, params, "repetition_penalty");
+    }
+
+    /**
+     * The documented example: parameters(temperature => 0.5, time_limit => 1000) gives exactly {"temperature":0.5,"time_limit":1000} (from the former test/a.sql).
+     *
+     * @throws SQLException
+     *             if the call fails
+     */
+    @Test
+    @DisplayName("parameters(temperature => 0.5, time_limit => 1000) gives exactly that object")
+    void parametersDocumentedExample() throws SQLException {
+        assertEquals(json("{\"temperature\":0.5,\"time_limit\":1000}"), json(value("dbsdk_v1.parameters(temperature => 0.5, time_limit => 1000)")));
     }
 
     /**
@@ -181,18 +193,6 @@ final class WatsonxTest extends ToolkitTest {
         assertNumber(1000, params, "time_limit");
         assertNumber(7, params, "random_seed");
         assertEquals(4, params.size(), params.toString());
-    }
-
-    /**
-     * The documented example: parameters(temperature => 0.5, time_limit => 1000) gives exactly {"temperature":0.5,"time_limit":1000} (from the former test/a.sql).
-     *
-     * @throws SQLException
-     *             if the call fails
-     */
-    @Test
-    @DisplayName("parameters(temperature => 0.5, time_limit => 1000) gives exactly that object")
-    void parametersDocumentedExample() throws SQLException {
-        assertEquals(json("{\"temperature\":0.5,\"time_limit\":1000}"), json(value("dbsdk_v1.parameters(temperature => 0.5, time_limit => 1000)")));
     }
 
     @Test

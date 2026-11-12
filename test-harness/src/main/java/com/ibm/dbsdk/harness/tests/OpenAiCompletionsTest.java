@@ -24,8 +24,19 @@ import com.ibm.dbsdk.harness.MockClient;
 final class OpenAiCompletionsTest extends ToolkitTest {
 
     private static final String JOB_API_KEY = "harness-key";
+
     private static final String MODEL = "llama3";
+
     private static final String PROMPT = "why are armadillos so cute?";
+
+    /**
+     * @param _prompt
+     *            the prompt
+     * @return the reply the mock generates for the prompt with the job's model
+     */
+    private static String expectedReply(final String _prompt) {
+        return "Mock openai response from " + MODEL + ": " + _prompt;
+    }
 
     /**
      * Point this job's OpenAI-compatible settings at the mock server.
@@ -41,15 +52,6 @@ final class OpenAiCompletionsTest extends ToolkitTest {
         call("openai_compatible_setbasepathforjob(" + STR + ")", "/v1");
         call("openai_compatible_setmodelforjob(" + STR + ")", MODEL);
         call("openai_compatible_setapikeyforjob(" + STR + ")", JOB_API_KEY);
-    }
-
-    /**
-     * @param _prompt
-     *            the prompt
-     * @return the reply the mock generates for the prompt with the job's model
-     */
-    private static String expectedReply(final String _prompt) {
-        return "Mock openai response from " + MODEL + ": " + _prompt;
     }
 
     @Test
@@ -114,38 +116,6 @@ final class OpenAiCompletionsTest extends ToolkitTest {
         } finally {
             call("openai_compatible_setapikeyforjob(" + STR + ")", JOB_API_KEY);
         }
-    }
-
-    /**
-     * NULL options behave like empty options (from the former test/openai_compatible_test.sql).
-     *
-     * @throws Exception
-     *             if a call or the mock inspection fails
-     */
-    @Test
-    @DisplayName("NULL options send the documented defaults")
-    void nullOptionsUseDefaults() throws Exception {
-        assertEquals(expectedReply(PROMPT), generate(PROMPT, null));
-        final JsonNode body = lastRequestJson("openai");
-        assertEquals(MODEL, body.path("model").asText());
-        assertNumber(256, body, "max_tokens");
-        assertNumber(1, body, "temperature");
-        assertEquals(expectedReply(PROMPT), json(generateJson(PROMPT, null)).at("/choices/0/text").asText());
-    }
-
-    /**
-     * The prompt alone is enough; options default to '{}' (from the former test/openai_compatible_test.sql).
-     *
-     * @throws Exception
-     *             if a call or the mock inspection fails
-     */
-    @Test
-    @DisplayName("a prompt alone uses the default options")
-    void promptOnlyUsesDefaults() throws Exception {
-        final String prompt = "Tell me a story about a dragon.";
-        assertEquals(expectedReply(prompt), clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ")", prompt));
-        assertNumber(256, lastRequestJson("openai"), "max_tokens");
-        assertEquals(expectedReply(prompt), json(clobValue("dbsdk_v1.openai_compatible_generate_json(" + STR + ")", prompt)).at("/choices/0/text").asText());
     }
 
     @Test
@@ -278,6 +248,38 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     void nRequestsMultipleChoices() throws Exception {
         assertEquals(3, json(generateJson(PROMPT, "{\"n\": 3}")).path("choices").size());
         assertNumber(3, lastRequestJson("openai"), "n");
+    }
+
+    /**
+     * NULL options behave like empty options (from the former test/openai_compatible_test.sql).
+     *
+     * @throws Exception
+     *             if a call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("NULL options send the documented defaults")
+    void nullOptionsUseDefaults() throws Exception {
+        assertEquals(expectedReply(PROMPT), generate(PROMPT, null));
+        final JsonNode body = lastRequestJson("openai");
+        assertEquals(MODEL, body.path("model").asText());
+        assertNumber(256, body, "max_tokens");
+        assertNumber(1, body, "temperature");
+        assertEquals(expectedReply(PROMPT), json(generateJson(PROMPT, null)).at("/choices/0/text").asText());
+    }
+
+    /**
+     * The prompt alone is enough; options default to '{}' (from the former test/openai_compatible_test.sql).
+     *
+     * @throws Exception
+     *             if a call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("a prompt alone uses the default options")
+    void promptOnlyUsesDefaults() throws Exception {
+        final String prompt = "Tell me a story about a dragon.";
+        assertEquals(expectedReply(prompt), clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ")", prompt));
+        assertNumber(256, lastRequestJson("openai"), "max_tokens");
+        assertEquals(expectedReply(prompt), json(clobValue("dbsdk_v1.openai_compatible_generate_json(" + STR + ")", prompt)).at("/choices/0/text").asText());
     }
 
     /**

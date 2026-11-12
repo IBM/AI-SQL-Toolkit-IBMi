@@ -36,20 +36,6 @@ final class ConsoleReporter implements TestExecutionListener {
     }
 
     /**
-     * Print a heading when a test class starts.
-     *
-     * @param _id
-     *            the started test or container
-     */
-    @Override
-    public void executionStarted(final TestIdentifier _id) {
-        if (_id.isContainer() && _id.getSource().isPresent() && _id.getSource().get() instanceof ClassSource) {
-            m_logger.println();
-            m_logger.println(_id.getDisplayName());
-        }
-    }
-
-    /**
      * Print the outcome of a finished test, or of a container that failed (e.g. a {@code @BeforeAll} error, which otherwise would not be visible).
      *
      * @param _id
@@ -84,6 +70,20 @@ final class ConsoleReporter implements TestExecutionListener {
     @Override
     public void executionSkipped(final TestIdentifier _id, final String _reason) {
         m_logger.println_warn("  SKIP  " + _id.getDisplayName() + " -- " + _reason);
+    }
+
+    /**
+     * Print a heading when a test class starts.
+     *
+     * @param _id
+     *            the started test or container
+     */
+    @Override
+    public void executionStarted(final TestIdentifier _id) {
+        if (_id.isContainer() && _id.getSource().isPresent() && _id.getSource().get() instanceof ClassSource) {
+            m_logger.println();
+            m_logger.println(_id.getDisplayName());
+        }
     }
 
     @Override

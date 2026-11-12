@@ -514,7 +514,7 @@ public final class OpenAiHandler extends ServiceHandler {
         final String finish = result.isTruncated() && text.equals(result.getText()) ? "length" : "stop";
         final String id = "chatcmpl-" + randomHex(24);
 
-        if (Json.bool(_body, "stream") && !_directives.isMalformed()) {
+        if (Json.isTrue(_body, "stream") && !_directives.isMalformed()) {
             final ObjectNode chunk = Json.object();
             chunk.put("id", id);
             chunk.put("object", "chat.completion.chunk");
@@ -575,11 +575,11 @@ public final class OpenAiHandler extends ServiceHandler {
     private void sendCompletion(final HttpCall _call, final JsonNode _body, final String _model, final String _prompt, final Sampling _sampling, final Directives _directives) throws IOException {
         final TextGen.Result result = TextGen.generate("openai", _model, _prompt, _directives, _sampling.m_maxTokens);
         final String stopped = applyStop(result.getText(), _body.get("stop"));
-        final String text = Json.bool(_body, "echo") ? _prompt + stopped : stopped;
+        final String text = Json.isTrue(_body, "echo") ? _prompt + stopped : stopped;
         final String finish = result.isTruncated() && stopped.equals(result.getText()) ? "length" : "stop";
         final String id = "cmpl-" + randomHex(24);
 
-        if (Json.bool(_body, "stream") && !_directives.isMalformed()) {
+        if (Json.isTrue(_body, "stream") && !_directives.isMalformed()) {
             final ObjectNode chunk = Json.object();
             chunk.put("id", id);
             chunk.put("object", "text_completion");

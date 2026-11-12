@@ -25,6 +25,7 @@ import com.ibm.dbsdk.harness.MockClient;
 final class WatsonxServiceTest extends ToolkitTest {
 
     private static final String API_KEY = "harness-api-key";
+
     private static final String DEFAULT_MODEL = "meta-llama/llama-2-13b-chat";
 
     /**
@@ -113,20 +114,6 @@ final class WatsonxServiceTest extends ToolkitTest {
     }
 
     /**
-     * Naming the default model explicitly gives the same result as omitting it (from the former test/a.sql).
-     *
-     * @throws Exception
-     *             if the call or the mock inspection fails
-     */
-    @Test
-    @DisplayName("generate accepts the default model as an explicit model_id")
-    void generateWithExplicitDefaultModel() throws Exception {
-        assertEquals("Y", authenticate());
-        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ")", "Hello world", DEFAULT_MODEL));
-        assertEquals(DEFAULT_MODEL, lastRequestJson("watsonx").path("model_id").asText());
-    }
-
-    /**
      * The model_id and parameters arguments are forwarded; max_new_tokens limits the reply.
      *
      * @throws Exception
@@ -139,6 +126,20 @@ final class WatsonxServiceTest extends ToolkitTest {
         final String reply = value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ", parameters => dbsdk_v1.parameters(max_new_tokens => 3))", "Hi there", "ibm/granite-3-8b-instruct");
         assertEquals("Mock watsonx response", reply);
         assertEquals("ibm/granite-3-8b-instruct", lastRequestJson("watsonx").path("model_id").asText());
+    }
+
+    /**
+     * Naming the default model explicitly gives the same result as omitting it (from the former test/a.sql).
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @DisplayName("generate accepts the default model as an explicit model_id")
+    void generateWithExplicitDefaultModel() throws Exception {
+        assertEquals("Y", authenticate());
+        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ")", "Hello world", DEFAULT_MODEL));
+        assertEquals(DEFAULT_MODEL, lastRequestJson("watsonx").path("model_id").asText());
     }
 
     /**
