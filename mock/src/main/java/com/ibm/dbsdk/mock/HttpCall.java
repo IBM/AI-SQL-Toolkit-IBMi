@@ -28,6 +28,7 @@ public final class HttpCall {
     private final String m_path;
     private final Map<String, String> m_query;
     private boolean m_responded = false;
+    private ResponseListener m_responseListener = null;
     private String m_responseBody = null;
     private String m_responseContentType = null;
     private int m_responseStatus = 0;
@@ -347,7 +348,7 @@ public final class HttpCall {
     }
 
     /**
-     * Remember the response for recording and set the common response headers.
+     * Remember the response for recording, set the common response headers, and notify the response listener.
      *
      * @param _status
      *            the HTTP status code
@@ -363,5 +364,29 @@ public final class HttpCall {
         m_responseBody = _body;
         m_exchange.getResponseHeaders().set("Content-Type", _contentType);
         m_exchange.getResponseHeaders().set("X-Mock-Server", "dbsdk-mock-server");
+        if (null != m_responseListener) {
+            m_responseListener.beforeResponse(this);
+        }
+    }
+
+    /**
+     * Register a listener that runs when the response is complete but before any of it is sent. The router uses this to record the request first, so a client that has received a response can
+     * always find the request in {@code /mock/requests}.
+     *
+     * @param _listener
+     *            the listener, or null for none
+     */
+    void setResponseListener(final ResponseListener _listener) {
+        m_responseListener = _listener;
+    }
+
+    /** Called when a response is ready to be sent. */
+    interface ResponseListener {
+
+        /**
+         * @param _call
+         *            the call, with its response status, content type and body already set
+         */
+        void beforeResponse(HttpCall _call);
     }
 }

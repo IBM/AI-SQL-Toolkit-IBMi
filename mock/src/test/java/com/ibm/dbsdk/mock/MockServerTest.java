@@ -81,6 +81,26 @@ class MockServerTest {
             assertTrue(System.currentTimeMillis() - start >= 250, "delay directive should slow the response");
         }
 
+        /**
+         * POST /mock/shutdown stops the server.
+         *
+         * @throws Exception
+         *             if the server or a request fails
+         */
+        @Test
+        void shutdownEndpointStopsServer() throws Exception {
+            final MockServer s = new MockServer(new MockConfig().setBindAddress("127.0.0.1").addHttpPort(0), null);
+            s.start();
+            final TestClient c = new TestClient("http://127.0.0.1:" + s.httpPorts().get(0));
+            assertEquals(true, c.request("POST", "/mock/shutdown", "", null).json().get("shutdown").asBoolean());
+            final long deadline = System.currentTimeMillis() + 10000;
+            while (!s.httpPorts().isEmpty() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertTrue(s.httpPorts().isEmpty(), "server should have stopped");
+            s.awaitStop();
+        }
+
         @Test
         void healthAndUnknownRoutes() throws IOException {
             assertEquals("UP", m_client.get("/mock/health").json().get("status").asText());
@@ -118,12 +138,14 @@ class MockServerTest {
             m_client.postJson("/services/T/B/X", "{\"text\":\"1\"}");
             m_client.postJson("/services/T/B/X", "{\"text\":\"2\"}");
             m_client.postJson("/api/generate", "{\"model\":\"m\",\"prompt\":\"p\",\"stream\":false}");
-            assertEquals(3, m_client.get("/mock/requests").json().size());
+            final JsonNode all = m_client.get("/mock/requests").json();
+            assertEquals(3, all.size(), all.toString());
             final JsonNode last = m_client.get("/mock/requests?service=slack&limit=1").json();
             assertEquals(1, last.size());
-            assertEquals("2", last.at("/0/json/text").asText());
+            assertEquals("2", last.at("/0/json/text").asText(), all.toString());
             assertEquals(200, last.at("/0/response/status").asInt());
-            assertEquals(3, m_client.delete("/mock/requests").json().get("cleared").asInt());
+            final String beforeClear = m_client.get("/mock/requests").getBody();
+            assertEquals(3, m_client.delete("/mock/requests").json().get("cleared").asInt(), beforeClear);
             assertEquals(0, m_client.get("/mock/requests").json().size());
         }
     }

@@ -18,6 +18,7 @@ import com.ibm.dbsdk.mock.MockState;
  * <li>{@code DELETE /mock/requests} clear recorded requests</li>
  * <li>{@code GET    /mock/kafka} messages published per topic</li>
  * <li>{@code POST   /mock/reset} clear requests, tokens and Kafka topics</li>
+ * <li>{@code POST   /mock/shutdown} stop the server (lets scripts stop it reliably, e.g. on IBM i, where signalling the java launcher may not end the JVM)</li>
  * </ul>
  */
 public final class AdminHandler extends ServiceHandler {
@@ -86,6 +87,15 @@ public final class AdminHandler extends ServiceHandler {
             requests(_call);
         } else if ("/mock/kafka".equals(path)) {
             _call.sendJson(200, m_state.kafkaSnapshot());
+        } else if ("/mock/shutdown".equals(path)) {
+            if (!"POST".equals(_call.getMethod())) {
+                badRequest(_call, "use POST /mock/shutdown");
+                return;
+            }
+            final ObjectNode r = Json.object();
+            r.put("shutdown", true);
+            _call.sendJson(200, r);
+            m_state.requestShutdown();
         } else if ("/mock/reset".equals(path)) {
             if (!"POST".equals(_call.getMethod())) {
                 badRequest(_call, "use POST /mock/reset");
@@ -130,6 +140,7 @@ public final class AdminHandler extends ServiceHandler {
         endpoint(e, "admin", "GET|DELETE", "/mock/requests", "Recorded requests (?service=&limit=)");
         endpoint(e, "admin", "GET", "/mock/kafka", "Published Kafka records");
         endpoint(e, "admin", "POST", "/mock/reset", "Clear all state");
+        endpoint(e, "admin", "POST", "/mock/shutdown", "Stop the server");
         return h;
     }
 

@@ -173,6 +173,9 @@ public final class MockClient {
     private JsonNode request(final String _method, final String _path) throws IOException {
         final HttpURLConnection c = (HttpURLConnection) new URL(m_baseUrl + _path).openConnection();
         c.setRequestMethod(_method);
+        // No connection reuse: HttpURLConnection silently resends a POST when a pooled keep-alive
+        // connection turns out to be closed
+        c.setRequestProperty("Connection", "close");
         c.setConnectTimeout(CONNECT_TIMEOUT_MS);
         c.setReadTimeout(READ_TIMEOUT_MS);
         if ("POST".equals(_method)) {

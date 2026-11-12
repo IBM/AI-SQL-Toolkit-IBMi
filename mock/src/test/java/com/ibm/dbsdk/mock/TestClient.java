@@ -147,6 +147,9 @@ final class TestClient {
             ((HttpsURLConnection) c).setHostnameVerifier((_hostname, _session) -> true);
         }
         c.setRequestMethod(_method);
+        // No connection reuse: HttpURLConnection silently resends a POST when a pooled keep-alive
+        // connection turns out to be closed, which would record the request twice
+        c.setRequestProperty("Connection", "close");
         c.setConnectTimeout(5000);
         c.setReadTimeout(20000);
         if (null != _headers) {

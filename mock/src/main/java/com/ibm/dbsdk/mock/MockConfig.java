@@ -112,7 +112,7 @@ public final class MockConfig {
             "  [[mock:record-error]]        Kafka only: 200 with an error in offsets[0].",
             "",
             "Inspection endpoints: GET /mock/health, GET|DELETE /mock/requests, GET /mock/kafka,",
-            "                      POST /mock/reset");
+            "                      POST /mock/reset, POST /mock/shutdown");
         //@formatter:on
     }
 

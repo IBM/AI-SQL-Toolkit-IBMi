@@ -32,6 +32,7 @@ public final class MockServer {
     private final List<HttpsServer> m_httpsServers = new ArrayList<HttpsServer>();
     private final PrintStream m_log;
     private final MockState m_state;
+    private final CountDownLatch m_stopped = new CountDownLatch(1);
 
     /**
      * Create a server that logs to standard output unless the configuration asks for quiet operation.
@@ -91,18 +92,24 @@ public final class MockServer {
             System.exit(1);
             return;
         }
-        final CountDownLatch done = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 server.stop();
-                done.countDown();
             }
         }, "mock-shutdown"));
+        server.awaitStop();
+        MockLog.info("dbsdk-mock-server stopped");
+    }
+
+    /**
+     * Block until the server has been stopped, by {@link #stop()}, {@code POST /mock/shutdown}, or JVM shutdown.
+     */
+    public void awaitStop() {
         try {
-            done.await();
+            m_stopped.await();
         } catch (final InterruptedException _e) {
-            MockLog.info("Main thread interrupted; shutting down");
+            MockLog.info("Interrupted while waiting for the server to stop");
             Thread.currentThread().interrupt();
         }
     }
@@ -162,6 +169,7 @@ public final class MockServer {
                 return t;
             }
         });
+        m_state.setShutdownAction(this::stop);
         final Router router = new Router(m_state);
         try {
             for (final Integer port : m_config.getHttpPorts()) {
@@ -190,7 +198,7 @@ public final class MockServer {
     }
 
     /**
-     * Stop all listeners. Safe to call more than once.
+     * Stop all listeners and release {@link #awaitStop()}. Safe to call more than once.
      */
     public synchronized void stop() {
         for (final HttpServer s : m_httpServers) {
@@ -205,6 +213,7 @@ public final class MockServer {
             m_executor.shutdownNow();
             m_executor = null;
         }
+        m_stopped.countDown();
     }
 
     /**

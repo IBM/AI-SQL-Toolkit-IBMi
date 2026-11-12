@@ -61,7 +61,8 @@ final class ConfTest extends ToolkitTest {
     }
 
     /**
-     * Put the running user's CONF row back exactly as it was, and remove the fictional user's row.
+     * Put the running user's CONF row back exactly as it was (re-creating it if a test removed it), and remove the fictional user's row. Each column is restored with its own UPDATE: a single
+     * statement setting every column is too complex for Db2 (SQL0101).
      *
      * @throws SQLException
      *             if restoring fails; the failure is reported against this class so it is not missed
@@ -73,19 +74,15 @@ final class ConfTest extends ToolkitTest {
             db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, m_user);
             return;
         }
-        final StringBuilder sql = new StringBuilder("update dbsdk_v1.conf set ");
-        final List<Object> params = new ArrayList<Object>();
+        call("conf_register_user()");
         for (final Map.Entry<String, String> column : m_savedRow.entrySet()) {
             if ("USRPRF".equals(column.getKey())) {
                 continue;
             }
             final boolean isInteger = m_integerColumns.contains(column.getKey());
-            sql.append(params.isEmpty() ? "" : ", ").append(column.getKey()).append(" = ").append(isInteger ? INT : STR);
-            params.add(null == column.getValue() ? null : isInteger ? Integer.valueOf(column.getValue().trim()) : column.getValue());
+            final Object value = null == column.getValue() ? null : isInteger ? Integer.valueOf(column.getValue().trim()) : column.getValue();
+            db().execute("update dbsdk_v1.conf set " + column.getKey() + " = " + (isInteger ? INT : STR) + " where usrprf = " + USRPRF_MARKER, value, m_user);
         }
-        sql.append(" where usrprf = ").append(USRPRF_MARKER);
-        params.add(m_user);
-        db().execute(sql.toString(), params.toArray());
     }
 
     /**
@@ -249,7 +246,8 @@ final class ConfTest extends ToolkitTest {
     }
 
     /**
-     * conf_remove_user deletes only the named user's row.
+     * conf_remove_user deletes only the named user's row. Removing another (here, nonexistent) user leaves the caller's row alone; removing the caller deletes it. The row is restored after the
+     * class.
      *
      * @throws SQLException
      *             if a call fails
@@ -258,11 +256,11 @@ final class ConfTest extends ToolkitTest {
     @DisplayName("conf_remove_user deletes only the named user's row")
     void removeUserDeletesOnlyThatRow() throws SQLException {
         call("conf_register_user()");
-        call("conf_register_user(" + USRPRF_MARKER + ")", OTHER_USER);
-        assertEquals(1, confRows(OTHER_USER).size());
         call("conf_remove_user(" + USRPRF_MARKER + ")", OTHER_USER);
-        assertTrue(confRows(OTHER_USER).isEmpty(), OTHER_USER + " should be removed");
-        assertFalse(confRows(m_user).isEmpty(), "the running user's row must be untouched");
+        assertFalse(confRows(m_user).isEmpty(), "removing another user must leave the running user's row");
+        call("conf_remove_user()");
+        assertTrue(confRows(m_user).isEmpty(), "conf_remove_user() should remove the running user's row");
+        call("conf_register_user()");
     }
 
     /**
@@ -292,7 +290,8 @@ final class ConfTest extends ToolkitTest {
     }
 
     /**
-     * Regression test for issues #21 and #27: a *forme setter must change only the calling user's row.
+     * Regression test for issues #21 and #27: a *forme setter must change only the calling user's row. With the toolkit's row access control in place (src/conf_rcac.sql), another user's row
+     * cannot be written at all, which is checked instead; without it, the MERGE isolation is checked directly.
      *
      * @throws SQLException
      *             if a call fails
@@ -301,7 +300,14 @@ final class ConfTest extends ToolkitTest {
     @DisplayName("*forme setters change only the calling user's row (#21, #27)")
     void setForMeOnlyChangesCallersRow() throws SQLException {
         call("conf_register_user()");
-        call("conf_register_user(" + USRPRF_MARKER + ")", OTHER_USER);
+        try {
+            call("conf_register_user(" + USRPRF_MARKER + ")", OTHER_USER);
+        } catch (final SQLException _e) {
+            assertEquals("22542", _e.getSQLState(), "only a row access control rejection is expected here: " + _e.getMessage());
+            call("ollama_setserverforme(" + STR + ")", "caller-server");
+            assertEquals("caller-server", confRows(m_user).get(0).get("OLLAMA_SERVER").trim());
+            return;
+        }
         db().execute("update dbsdk_v1.conf set ollama_server = 'other-user-server' where usrprf = " + USRPRF_MARKER, OTHER_USER);
         call("ollama_setserverforme(" + STR + ")", "caller-server");
         assertEquals("caller-server", confRows(m_user).get(0).get("OLLAMA_SERVER").trim());

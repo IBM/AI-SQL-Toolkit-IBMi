@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.platform.engine.TestTag;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -59,6 +61,33 @@ public final class HarnessMain {
             builder.filters(TagFilter.excludeTags(new ArrayList<String>(excluded)));
         }
         return builder.build();
+    }
+
+    /**
+     * Decide whether the user can be prompted. A console object alone is not enough: some JVMs (e.g. IBM's J9 on IBM i) provide one even when standard input is not a terminal, and the
+     * prompt library then loops forever on end-of-input. On Unix-like systems, standard input is therefore also checked with {@code test -t 0}.
+     *
+     * @param _logger
+     *            the console logger, for diagnostics
+     * @return true if prompting on the console can work
+     */
+    private static boolean isInteractive(final AppLogger _logger) {
+        if (null == System.console()) {
+            return false;
+        }
+        if (System.getProperty("os.name", "").toLowerCase(Locale.ROOT).startsWith("windows")) {
+            return true;
+        }
+        try {
+            final Process p = new ProcessBuilder("sh", "-c", "test -t 0").redirectInput(ProcessBuilder.Redirect.INHERIT).start();
+            return p.waitFor(10, TimeUnit.SECONDS) && 0 == p.exitValue();
+        } catch (final IOException _e) {
+            _logger.printfln_warn_verbose("Could not check whether standard input is a terminal: %s", _e.getMessage());
+            return true;
+        } catch (final InterruptedException _e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
     }
 
     /**
@@ -183,7 +212,7 @@ public final class HarnessMain {
      *             if a value is missing and cannot be prompted for
      */
     static void resolveCredentials(final HarnessConfig _config, final AppLogger _logger) throws IOException {
-        final boolean interactive = null != System.console();
+        final boolean interactive = isInteractive(_logger);
         if (null == _config.getUser()) {
             final String fromEnv = System.getenv(ENV_USER);
             if (null != fromEnv && !fromEnv.trim().isEmpty()) {
