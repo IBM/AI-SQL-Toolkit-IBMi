@@ -24,7 +24,6 @@ buildts.txt: /qsys.lib/$(SCHEMA).lib  $(OBJS)
 	date > buildts.txt
 
 clean:
-	rm -f master_install.sql
 	rm -r .build
 
 .build/%.done: %
@@ -32,7 +31,8 @@ clean:
 
 # One SQL script with the whole toolkit, in build order: the source of each item in $(OBJS)
 # (.build/<file>.done is the stamp for <file>), each followed by a newline in case it lacks one.
-master_install.sql: $(OBJS)
+.build/master_install.sql: $(OBJS)
+	mkdir -p $(@D)
 	: > $@
 	for f in $(patsubst .build/%.done,%,$(OBJS)); do cat "$$f" >> $@; echo >> $@; done
 
