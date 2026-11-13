@@ -1,0 +1,3 @@
+# Unix line endings everywhere
+* text=auto eol=lf
+*.jar binary

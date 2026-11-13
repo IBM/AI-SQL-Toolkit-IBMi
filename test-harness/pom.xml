@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.ibm.dbsdk</groupId>
+  <artifactId>dbsdk-test-harness</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>AI-SDK-Db2-IBMi Test Harness</name>
+  <description>
+    End-to-end test suite for the AI-SDK-Db2-IBMi (dbsdk_v1) SQL toolkit. Calls the SQL functions
+    over the Mapepire JDBC driver and checks the results, using the dbsdk mock server as the
+    external service endpoint.
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- Minimum supported runtime is Java 8 -->
+    <java.minimum.version>1.8</java.minimum.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <main.class>com.ibm.dbsdk.harness.HarnessMain</main.class>
+
+    <mapepire.jdbc.version>2.0.0</mapepire.jdbc.version>
+    <jcmdutils.version>0.1.5</jcmdutils.version>
+    <jackson.version>2.17.1</jackson.version>
+    <junit.version>5.13.4</junit.version>
+    <junit.platform.version>1.13.4</junit.platform.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.mapepire-ibmi</groupId>
+      <artifactId>mapepire-jdbc</artifactId>
+      <version>${mapepire.jdbc.version}</version>
+    </dependency>
+    <!-- The driver's WebSocket library logs through SLF4J; bind it to a no-op logger -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.theprez</groupId>
+      <artifactId>jcmdutils</artifactId>
+      <version>${jcmdutils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!--
+      The toolkit tests live in src/main and run inside the jar through the JUnit Platform
+      Launcher, so JUnit is a compile-scope dependency here, not a test-scope one.
+    -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>${junit.platform.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-reporting</artifactId>
+      <version>${junit.platform.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Plugin versions are the newest that still support Maven 3.2.5+, so the build works with
+         the Maven in the IBM i open source package repository (3.6.0). -->
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-java</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[${java.minimum.version},)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>${main.class}</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- Build a single runnable jar containing the harness, the tests and all dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <!-- jar-with-dependencies, plus merging of META-INF/services files; see the descriptor -->
+          <descriptors>
+            <descriptor>src/assembly/jar-with-dependencies.xml</descriptor>
+          </descriptors>
+          <archive>
+            <manifest>
+              <mainClass>${main.class}</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+      When building on JDK 9+, compile with release=8 so that javac verifies that no API newer
+      than Java 8 is used. JDK 8 itself does not understand the release flag, so it falls back to
+      plain source/target 1.8.
+    -->
+    <profile>
+      <id>java8-release</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <maven.compiler.release>8</maven.compiler.release>
+      </properties>
+    </profile>
+  </profiles>
+</project>

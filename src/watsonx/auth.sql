@@ -4,6 +4,8 @@
 -- #### **Function:** `watsonx_authenticate`
 
 -- **Description:** authenticates to the watsonx service and acquires an access token.
+-- The token is requested from the IAM base URL returned by `wx_GetIamBaseUrl` (by default
+-- `https://iam.cloud.ibm.com`).
 -- 
 -- **Return type:** 
 -- - `char(1) ccsid 1208`
@@ -30,7 +32,7 @@ begin
     --    
     select "expires_in", "access_token" into expiration_seconds, bearer_token
       from json_table(QSYS2.HTTP_POST(
-        'https://iam.cloud.ibm.com/identity/token',
+        dbsdk_v1.wx_GetIamBaseUrl() concat '/identity/token',
         'grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=' concat dbsdk_v1.wx_apikey,
         json_object('headers': json_object('Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'))
       ), 'lax $'

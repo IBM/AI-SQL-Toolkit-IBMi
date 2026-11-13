@@ -1,3 +1,8 @@
 docs/node_modules/
 creds.json
 /.vscode
+debug.log
+# test-harness credentials (see test-harness/run-tests.sh)
+.dbsdk-test.env
+# build stamps and generated files, including .build/master_install.sql
+/.build/
