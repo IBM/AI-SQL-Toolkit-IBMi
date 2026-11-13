@@ -34,6 +34,7 @@ abstract class ToolkitTest {
 
     /** Cast for an integer parameter marker. */
     static final String INT = "cast(? as integer)";
+
     /** Cast for a string parameter marker. */
     static final String STR = "cast(? as varchar(32000) ccsid 1208)";
 
@@ -41,9 +42,29 @@ abstract class ToolkitTest {
     private static final ObjectMapper s_strictMapper = new ObjectMapper().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
 
     private HarnessConfig m_config = null;
+
     private Db m_db = null;
+
     private MockClient m_mock = null;
+
     private String m_mockProblem = null;
+
+    /**
+     * Assert that a JSON field is a number (not a numeric string) with the expected value. Use this where the toolkit must send a JSON number, as OpenAI-compatible endpoints require.
+     *
+     * @param _expected
+     *            the expected value
+     * @param _node
+     *            the object holding the field
+     * @param _field
+     *            the field name
+     */
+    static void assertJsonNumber(final double _expected, final JsonNode _node, final String _field) {
+        final JsonNode value = _node.get(_field);
+        assertNotNull(value, "field '" + _field + "' missing from " + _node);
+        assertTrue(value.isNumber(), "field '" + _field + "' must be a JSON number, not " + value.getNodeType() + ": " + _node);
+        assertEquals(_expected, value.asDouble(), 1e-9, "field '" + _field + "' in " + _node);
+    }
 
     /**
      * Assert that a numeric JSON field has the expected value. Accepts numbers and numeric strings, since Db2 may serialize decimals either way.
@@ -101,6 +122,27 @@ abstract class ToolkitTest {
         return _prefix + "-" + Long.toString(System.currentTimeMillis(), 36);
     }
 
+    @AfterAll
+    final void closeConnection() throws SQLException {
+        if (null != m_db) {
+            m_db.close();
+        }
+    }
+
+    /**
+     * Open this class's connection (its IBM i job) and check whether the mock can be inspected from this machine.
+     *
+     * @throws SQLException
+     *             if the connection fails
+     */
+    @BeforeAll
+    final void openConnection() throws SQLException {
+        m_config = HarnessContext.getConfig();
+        m_db = Db.open(m_config);
+        m_mock = new MockClient(m_config.getMockUrl());
+        m_mockProblem = m_mock.checkHealth();
+    }
+
     /**
      * Run {@code CALL dbsdk_v1.<procedure>}.
      *
@@ -128,13 +170,6 @@ abstract class ToolkitTest {
      */
     String clobValue(final String _expression, final Object... _params) throws SQLException {
         return value("cast(" + _expression + " as varchar(32000) ccsid 1208)", _params);
-    }
-
-    @AfterAll
-    final void closeConnection() throws SQLException {
-        if (null != m_db) {
-            m_db.close();
-        }
     }
 
     HarnessConfig config() {
@@ -193,20 +228,6 @@ abstract class ToolkitTest {
 
     Integer mockPort() {
         return Integer.valueOf(m_config.getMockPort());
-    }
-
-    /**
-     * Open this class's connection (its IBM i job) and check whether the mock can be inspected from this machine.
-     *
-     * @throws SQLException
-     *             if the connection fails
-     */
-    @BeforeAll
-    final void openConnection() throws SQLException {
-        m_config = HarnessContext.getConfig();
-        m_db = Db.open(m_config);
-        m_mock = new MockClient(m_config.getMockUrl());
-        m_mockProblem = m_mock.checkHealth();
     }
 
     /**

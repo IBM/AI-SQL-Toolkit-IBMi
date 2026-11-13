@@ -20,6 +20,7 @@ import com.ibm.dbsdk.harness.MockClient;
 final class TwilioSendTest extends ToolkitTest {
 
     private static final String ACCOUNT_SID = "ACmockAccountSid";
+
     private static final String FROM_NUMBER = "5557654321";
 
     /**
@@ -78,5 +79,23 @@ final class TwilioSendTest extends ToolkitTest {
         assertEquals("5551234567", form.get("To"));
         assertEquals(FROM_NUMBER, form.get("From"));
         assertEquals("Hello from the harness", form.get("Body"));
+    }
+
+    /**
+     * The account SID and auth token are sent with HTTP Basic authentication, also over plain HTTP. The mock only answers 201 when the Basic user is the account SID from the URL, so a
+     * successful send proves the credentials arrived and decode correctly (#54).
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("sendsms sends HTTP Basic credentials for the account SID [known issue #54]")
+    void sendsBasicCredentials() throws Exception {
+        assertEquals("queued", send("5551234567", "Credentials check"));
+        final JsonNode request = lastRequest("twilio");
+        // The mock masks credentials in its recordings, so only the scheme is visible
+        assertEquals("Basic ****", MockClient.header(request, "Authorization"));
+        assertEquals(201, request.at("/response/status").asInt(), "the mock accepts only credentials whose user is the account SID");
     }
 }
