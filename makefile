@@ -24,10 +24,17 @@ buildts.txt: /qsys.lib/$(SCHEMA).lib  $(OBJS)
 	date > buildts.txt
 
 clean:
+	rm -f master_install.sql
 	rm -r .build
 
 .build/%.done: %
 	./runsql.sh $(SCHEMA) $<
+
+# One SQL script with the whole toolkit, in build order: the source of each item in $(OBJS)
+# (.build/<file>.done is the stamp for <file>), each followed by a newline in case it lacks one.
+master_install.sql: $(OBJS)
+	: > $@
+	for f in $(patsubst .build/%.done,%,$(OBJS)); do cat "$$f" >> $@; echo >> $@; done
 
 # Build the mock server and the test harness jars. "clean" so that a deployment that preserved old
 # file times (e.g. copied with tar) can never leave stale classes behind.
