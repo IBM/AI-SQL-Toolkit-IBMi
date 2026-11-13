@@ -13,7 +13,7 @@ JAVA_HOME ?= /QOpenSys/QIBM/ProdData/JavaVM/jdk80/64bit
 export JAVA_HOME
 endif
 
-.PHONY: all clean test test-build
+.PHONY: all clean test test_all test-build
 
 all: buildts.txt
 
@@ -43,7 +43,7 @@ test-build:
 	cd test-harness && $(MVN) $(MVN_FLAGS) clean package
 
 # Options for the test harness. By default the tests for open toolkit bugs (tag known-issue) are
-# skipped, so a passing run means no regressions; "make test HARNESS_ARGS=" runs them too.
+# skipped, so a passing run means no regressions; "make test_all" runs them too.
 HARNESS_ARGS ?= --skip known-issue
 export HARNESS_ARGS
 
@@ -51,3 +51,8 @@ export HARNESS_ARGS
 # the toolkit through mapepire-server (localhost:8076 by default). See test-harness/README.md.
 test: all test-build
 	sh test-harness/run-tests.sh
+
+# Like "test", but with the tests for open toolkit bugs (tag known-issue) included, so expect those
+# to fail until the bugs are fixed. HARNESS_ARGS on the command line still takes precedence.
+test_all: HARNESS_ARGS =
+test_all: test
