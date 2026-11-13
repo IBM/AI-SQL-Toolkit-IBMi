@@ -59,8 +59,8 @@ MAPEPIRE_PASSWORD=...
 ' > .dbsdk-test.env
 ```
 
-Tests for open toolkit bugs (`known-issue`) are skipped by default; `make test HARNESS_ARGS=`
-includes them. Other settings: `MOCK_PORT`, `MAPEPIRE_HOST`, `MAPEPIRE_PORT`, `MVN` and `JAVA_HOME`
+Tests for open toolkit bugs (`known-issue`) are skipped by default; `make test_all` includes
+them. Other settings: `MOCK_PORT`, `MAPEPIRE_HOST`, `MAPEPIRE_PORT`, `MVN` and `JAVA_HOME`
 (see `test-harness/run-tests.sh` and the root `makefile`).
 
 ## Build
@@ -171,8 +171,8 @@ until the bug is fixed, and you can leave them out with `--skip known-issue`:
 | Slack: error text is raised with SQLSTATE 38002 | #48 |
 | watsonx: `GetUrl` includes a version by default; `wx_generate` works without setting `wx_apiVersion` | #49 |
 | Twilio: `+` in E.164 numbers is preserved | #50 |
-| OpenAI-compatible: fractional `temperature`, `top_p` and penalties are sent unchanged (8 tests) | #52 |
-| Twilio: `twilio_sendsms` works with an `http` base URL, such as the mock (2 tests) | #54 |
+| OpenAI-compatible: fractional `temperature`, `top_p` and penalties are sent unchanged, as JSON numbers (11 tests) | #52 |
+| Twilio: `twilio_sendsms` sends its Basic credentials over an `http` base URL, such as the mock (3 tests) | #54 |
 | Kafka: the per-record error is returned to the caller, as documented | none yet |
 | `json_object_update`: update values overwrite base values; two NULLs give `{}` | none yet |
 

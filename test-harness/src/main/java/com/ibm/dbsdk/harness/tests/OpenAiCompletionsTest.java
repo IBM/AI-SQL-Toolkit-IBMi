@@ -30,6 +30,19 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     private static final String PROMPT = "why are armadillos so cute?";
 
     /**
+     * Check the option values sent for the two-decimal test.
+     *
+     * @param _body
+     *            the recorded request body
+     */
+    private static void assertTwoDecimalOptions(final JsonNode _body) {
+        assertJsonNumber(0.25, _body, "temperature");
+        assertJsonNumber(0.95, _body, "top_p");
+        assertJsonNumber(-1.25, _body, "presence_penalty");
+        assertJsonNumber(1.75, _body, "frequency_penalty");
+    }
+
+    /**
      * @param _prompt
      *            the prompt
      * @return the reply the mock generates for the prompt with the job's model
@@ -358,6 +371,23 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     void topPIsSent() throws Exception {
         generate(PROMPT, "{\"top_p\": 0.5}");
         assertNumber(0.5, lastRequestJson("openai"), "top_p");
+    }
+
+    /**
+     * Values with two decimals reach the endpoint unchanged through both functions. Reading options into decimal(3,1) variables would turn top_p 0.95 into 0.9 (#52).
+     *
+     * @throws Exception
+     *             if a call or the mock inspection fails
+     */
+    @Test
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("two-decimal option values are sent unchanged by generate and generate_json [known issue #52]")
+    void twoDecimalOptionsAreSentUnchanged() throws Exception {
+        final String options = "{\"temperature\": 0.25, \"top_p\": 0.95, \"presence_penalty\": -1.25, \"frequency_penalty\": 1.75}";
+        generate(PROMPT, options);
+        assertTwoDecimalOptions(lastRequestJson("openai"));
+        generateJson(PROMPT, options);
+        assertTwoDecimalOptions(lastRequestJson("openai"));
     }
 
     @Test

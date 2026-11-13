@@ -141,6 +141,25 @@ final class OpenAiChatTest extends ToolkitTest {
         assertEquals("harness-user", body.path("user").asText());
     }
 
+    /**
+     * chat_generate builds its body with JSON_UPDATE, which writes DECIMAL values as JSON strings (e.g. "temperature": ".70"). Endpoints that validate types reject that, so the values must
+     * be JSON numbers (#52).
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("fractional options are sent as JSON numbers, not strings [known issue #52]")
+    void fractionalOptionsAreJsonNumbers() throws Exception {
+        chat("Hello", "{\"temperature\": 0.7, \"top_p\": 0.5, \"presence_penalty\": 1.5, \"frequency_penalty\": -0.5}");
+        final JsonNode body = lastRequestJson("openai");
+        assertJsonNumber(0.7, body, "temperature");
+        assertJsonNumber(0.5, body, "top_p");
+        assertJsonNumber(1.5, body, "presence_penalty");
+        assertJsonNumber(-0.5, body, "frequency_penalty");
+    }
+
     @Test
     @DisplayName("chat_generate signals SQLSTATE 38002 on an HTTP error")
     void httpErrorSignals38002() {
@@ -184,5 +203,23 @@ final class OpenAiChatTest extends ToolkitTest {
         final JsonNode body = lastRequestJson("openai");
         assertEquals(Arrays.asList("messages", "model", "temperature"), fieldNames(body));
         assertNumber(0.7, body, "temperature");
+    }
+
+    /**
+     * Values with two decimals reach the endpoint unchanged. Reading options into decimal(3,1) variables would turn top_p 0.95 into 0.9 (#52).
+     *
+     * @throws Exception
+     *             if the call or the mock inspection fails
+     */
+    @Test
+    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
+    @DisplayName("two-decimal option values are sent unchanged [known issue #52]")
+    void twoDecimalOptionsAreSentUnchanged() throws Exception {
+        chat("Hello", "{\"temperature\": 0.25, \"top_p\": 0.95, \"presence_penalty\": -1.25, \"frequency_penalty\": 1.75}");
+        final JsonNode body = lastRequestJson("openai");
+        assertJsonNumber(0.25, body, "temperature");
+        assertJsonNumber(0.95, body, "top_p");
+        assertJsonNumber(-1.25, body, "presence_penalty");
+        assertJsonNumber(1.75, body, "frequency_penalty");
     }
 }
