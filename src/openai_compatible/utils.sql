@@ -295,28 +295,196 @@ end;
 create or replace function dbsdk_v1.json_object_update(
   base_object CLOB(2G) ccsid 1208,
   update_object CLOB(2G) ccsid 1208
-) 
+)
   returns clob(64K) ccsid 1208
   deterministic
   no external action
   not fenced
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  -- If base object is empty, return update object
+  declare clean_update varchar(32000) ccsid 1208;
+  declare clean_base clob(2G) ccsid 1208;
+  declare kept_base clob(2G) ccsid 1208;
+  declare len integer;
+  declare pos integer default 1;
+  declare c character(1) ccsid 1208;
+  declare in_string boolean default false;
+  declare escaped boolean default false;
+  declare curly_depth integer default 0;
+  declare square_depth integer default 0;
+  
+  declare key_start integer default 0;
+  declare key_end integer default 0;
+  declare key_name varchar(1000) ccsid 1208;
+  declare skip_until_comma boolean default false;
+  declare keys_to_overwrite varchar(32000) ccsid 1208;
+  
+  declare item_start integer default 1;
+  declare item_str varchar(32000) ccsid 1208;
+  declare has_overwrite_key boolean default false;
+
+  -- 1. Handle NULL cases
+  -- "two NULLs give {}"
+  if base_object is null and update_object is null then
+    return '{}';
+  end if;
+
+  -- "a NULL base object returns the update object"
+  -- "an empty base object returns the update object"
   if base_object is null or trim(base_object) = '' or trim(base_object) = '{}' then
+    if update_object is null then
+      return '{}';
+    end if;
     return update_object;
   end if;
   
-  -- If update object is empty, return base object
+  -- "a NULL update object returns the base object"
+  -- "an empty update object returns the base object"
   if update_object is null or trim(update_object) = '' or trim(update_object) = '{}' then
     return base_object;
   end if;
-  
-  -- Directly combine without intermediate variable assignments
-  return '{' concat 
-         substring(trim(base_object), 2, length(trim(base_object)) - 2) concat 
-         ', ' concat 
-         substring(trim(update_object), 2, length(trim(update_object)) - 2) concat 
-         '}';
 
+  -- 2. Build the list of keys to overwrite from the update_object
+  set clean_update = trim(update_object);
+  if (left(clean_update, 1) = '{' and right(clean_update, 1) = '}') then
+    set clean_update = substring(clean_update, 2, length(clean_update) - 2);
+  end if;
+
+  set keys_to_overwrite = ',';
+  set len = length(clean_update);
+  set pos = 1;
+  
+  while (pos <= len) do
+    set c = substring(clean_update, pos, 1);
+    
+    if c = '\' and not escaped then
+      set escaped = true;
+    else
+      if not escaped then
+        if c = '"' then
+          set in_string = not in_string;
+          
+          if not skip_until_comma then
+            if in_string and curly_depth = 0 and square_depth = 0 then
+              set key_start = pos + 1;
+            elseif not in_string and curly_depth = 0 and square_depth = 0 then
+              set key_end = pos - 1;
+              set key_name = substring(clean_update, key_start, key_end - key_start + 1);
+              set keys_to_overwrite = keys_to_overwrite concat key_name concat ',';
+              set skip_until_comma = true;
+            end if;
+          end if;
+        elseif not in_string then
+          if c = '{' then
+            set curly_depth = curly_depth + 1;
+          elseif c = '}' then
+            set curly_depth = curly_depth - 1;
+          elseif c = '[' then
+            set square_depth = square_depth + 1;
+          elseif c = ']' then
+            set square_depth = square_depth - 1;
+          elseif c = ',' and curly_depth = 0 and square_depth = 0 then
+            set skip_until_comma = false;
+          end if;
+        end if;
+      end if;
+      set escaped = false;
+    end if;
+    
+    set pos = pos + 1;
+  end while;
+
+  -- 3. Filter out those keys from the base_object
+  set clean_base = trim(base_object);
+  if (left(clean_base, 1) = '{' and right(clean_base, 1) = '}') then
+    set clean_base = substring(clean_base, 2, length(clean_base) - 2);
+  end if;
+
+  set kept_base = '';
+  set len = length(clean_base);
+  set pos = 1;
+  set in_string = false;
+  set escaped = false;
+  set curly_depth = 0;
+  set square_depth = 0;
+  set skip_until_comma = false;
+  set item_start = 1;
+  set has_overwrite_key = false;
+
+  while (pos <= len) do
+    set c = substring(clean_base, pos, 1);
+    
+    if c = '\' and not escaped then
+      set escaped = true;
+    else
+      if not escaped then
+        if c = '"' then
+          set in_string = not in_string;
+          
+          if not skip_until_comma then
+            if in_string and curly_depth = 0 and square_depth = 0 then
+              set key_start = pos + 1;
+            elseif not in_string and curly_depth = 0 and square_depth = 0 then
+              set key_end = pos - 1;
+              set key_name = substring(clean_base, key_start, key_end - key_start + 1);
+              if locate(',' concat key_name concat ',', keys_to_overwrite) > 0 then
+                set has_overwrite_key = true;
+              else
+                set has_overwrite_key = false;
+              end if;
+              set skip_until_comma = true;
+            end if;
+          end if;
+        elseif not in_string then
+          if c = '{' then
+            set curly_depth = curly_depth + 1;
+          elseif c = '}' then
+            set curly_depth = curly_depth - 1;
+          elseif c = '[' then
+            set square_depth = square_depth + 1;
+          elseif c = ']' then
+            set square_depth = square_depth - 1;
+          elseif c = ',' and curly_depth = 0 and square_depth = 0 then
+            if not has_overwrite_key then
+              set item_str = trim(substring(clean_base, item_start, pos - item_start));
+              if length(item_str) > 0 then
+                if length(kept_base) > 0 then
+                  set kept_base = kept_base concat ', ';
+                end if;
+                set kept_base = kept_base concat item_str;
+              end if;
+            end if;
+            set item_start = pos + 1;
+            set skip_until_comma = false;
+            set has_overwrite_key = false;
+          end if;
+        end if;
+      end if;
+      set escaped = false;
+    end if;
+    
+    set pos = pos + 1;
+  end while;
+
+  -- Process the last item
+  if not has_overwrite_key then
+    set item_str = trim(substring(clean_base, item_start, len - item_start + 1));
+    if length(item_str) > 0 then
+      if length(kept_base) > 0 then
+        set kept_base = kept_base concat ', ';
+      end if;
+      set kept_base = kept_base concat item_str;
+    end if;
+  end if;
+
+  -- 4. Combine the filtered base and the update_object
+  if kept_base is null or kept_base = '' then
+    return update_object;
+  end if;
+
+  return '{' concat
+         kept_base concat
+         ', ' concat
+         substring(trim(update_object), 2, length(trim(update_object)) - 2) concat
+         '}';
 end;

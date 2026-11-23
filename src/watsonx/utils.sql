@@ -149,12 +149,19 @@ create or replace function dbsdk_v1.GetUrl(route varchar(1000))
   reads sql data
 begin
   declare finalUrl varchar(2048) ccsid 1208;
+  declare apiVersion varchar(10) ccsid 1208;
 
   set finalUrl = dbsdk_v1.wx_GetMlBaseUrl() concat '/ml/v1' concat route;
 
-  if (dbsdk_v1.wx_apiVersion is not null and dbsdk_v1.wx_apiVersion != '') then
-    set finalUrl = finalUrl concat '?version=' concat dbsdk_v1.wx_apiVersion;
+  set apiVersion = dbsdk_v1.wx_apiVersion;
+  if (apiVersion is null) then
+    set apiVersion = (select watsonx_apiVersion from dbsdk_v1.conf where USRPRF = CURRENT_USER);
   end if;
+  if (apiVersion is null or trim(apiVersion) = '') then
+    set apiVersion = '2023-07-07';
+  end if;
+
+  set finalUrl = finalUrl concat '?version=' concat apiVersion;
 
   return finalUrl;
 end;

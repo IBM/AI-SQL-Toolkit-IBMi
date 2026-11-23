@@ -34,13 +34,39 @@
 --
 -- Unsupported options:
 --  - set best_of = coalesce(json_value(options, '$.best_of'), 1);
+ 
+/*
+  =====================================================================
+  STALE ROUTINE CLEANUP
+  =====================================================================
+  Older toolkit versions registered openai_compatible_generate and
+  openai_compatible_generate_json with only 2 parameters. Because
+  the current version defines them with 4 parameters, "CREATE OR REPLACE"
+  registers an overload instead of replacing the existing function.
+  
+  To prevent upgraded systems from silently executing the stale
+  2-parameter overloads, we query QSYS2.SYSROUTINES and drop any
+  signatures that do not take exactly 4 parameters.
+  =====================================================================
+*/
+begin
+  for stale_func as
+    select specific_name
+      from qsys2.sysroutines
+      where routine_schema = 'DBSDK_V1'
+        and routine_name in ('OPENAI_COMPATIBLE_GENERATE', 'OPENAI_COMPATIBLE_GENERATE_JSON')
+        and in_parms <> 4
+  do
+    execute immediate 'drop specific function dbsdk_v1.' concat stale_func.specific_name;
+  end for;
+end;
 
 create or replace function dbsdk_v1.openai_compatible_generate(
   prompt varchar(32000) ccsid 1208,
   options varchar(32000) ccsid 1208 default '{}',
   api_key_  varchar(8000) ccsid 1208 default NULL,
   base_url varchar(1000) ccsid 1208 default NULL
-) 
+)
   returns clob(2G) ccsid 1208
   modifies sql data
   not deterministic
@@ -60,15 +86,15 @@ begin
   -- Extract parameters from options
   declare model_id varchar(1000) ccsid 1208;
   declare max_tokens integer default 256;
-  declare temperature decimal(3,1);
-  declare top_p decimal(3,1);
+  declare temperature decimal(4,2);
+  declare top_p decimal(4,2);
   declare n integer;
   declare stream varchar(5) ccsid 1208;
   declare logprobs integer;
   declare echo varchar(5) ccsid 1208;
   declare stop_token varchar(32000) ccsid 1208;
-  declare presence_penalty decimal(3,1);
-  declare frequency_penalty decimal(3,1);
+  declare presence_penalty decimal(4,2);
+  declare frequency_penalty decimal(4,2);
   declare logit_bias varchar(32000) ccsid 1208;
   declare user_id varchar(1000) ccsid 1208;
   declare seed integer;
@@ -77,15 +103,15 @@ begin
   -- Get parameters from options JSON
   set model_id = json_value(options, '$.model_id');
   set max_tokens = coalesce(json_value(options, '$.max_tokens'), 256);
-  set temperature = coalesce(json_value(options, '$.temperature'), 1);
-  set top_p = coalesce(json_value(options, '$.top_p'), 1);
+  set temperature = coalesce(json_value(options, '$.temperature' returning decimal(4,2)), 1.00);
+  set top_p = coalesce(json_value(options, '$.top_p' returning decimal(4,2)), 1.00);
   set n = coalesce(json_value(options, '$.n'), 1);
   set stream = coalesce(json_value(options, '$.stream'), 'false');
   set logprobs = json_value(options, '$.logprobs');
   set echo = coalesce(json_value(options, '$.echo'), 'false');
   set stop_token = json_value(options, '$.stop');
-  set presence_penalty = coalesce(json_value(options, '$.presence_penalty'), 0);
-  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty'), 0);
+  set presence_penalty = coalesce(json_value(options, '$.presence_penalty' returning decimal(4,2)), 0.00);
+  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty' returning decimal(4,2)), 0.00);
   set logit_bias = json_value(options, '$.logit_bias');
   set user_id = json_value(options, '$.user');
   set seed = json_value(options, '$.seed');
@@ -135,11 +161,11 @@ begin
     'model': coalesce(model_id, dbsdk_v1.openai_compatible_getmodel()),
     'prompt': prompt,
     'max_tokens': max_tokens,
-    'temperature': temperature,
-    'top_p': top_p,
+    'temperature': cast(temperature as decfloat),
+    'top_p': cast(top_p as decfloat),
     'n': n,
-    'presence_penalty': presence_penalty,
-    'frequency_penalty': frequency_penalty
+    'presence_penalty': cast(presence_penalty as decfloat),
+    'frequency_penalty': cast(frequency_penalty as decfloat)
   );
 
   -- Add optional parameters only if they are not null
@@ -261,15 +287,15 @@ begin
   -- Extract parameters from options
   declare model_id varchar(1000) ccsid 1208;
   declare max_tokens integer default 256;
-  declare temperature decimal(3,1);
-  declare top_p decimal(3,1);
+  declare temperature decimal(4,2);
+  declare top_p decimal(4,2);
   declare n integer;
   declare stream varchar(5) ccsid 1208;
   declare logprobs integer;
   declare echo varchar(5) ccsid 1208;
   declare stop_token varchar(32000) ccsid 1208;
-  declare presence_penalty decimal(3,1);
-  declare frequency_penalty decimal(3,1);
+  declare presence_penalty decimal(4,2);
+  declare frequency_penalty decimal(4,2);
   declare logit_bias varchar(32000) ccsid 1208;
   declare user_id varchar(1000) ccsid 1208;
   declare seed integer;
@@ -278,15 +304,15 @@ begin
   -- Get parameters from options JSON
   set model_id = json_value(options, '$.model_id');
   set max_tokens = coalesce(json_value(options, '$.max_tokens'), 256);
-  set temperature = coalesce(json_value(options, '$.temperature'), 1);
-  set top_p = coalesce(json_value(options, '$.top_p'), 1);
+  set temperature = coalesce(json_value(options, '$.temperature' returning decimal(4,2)), 1.00);
+  set top_p = coalesce(json_value(options, '$.top_p' returning decimal(4,2)), 1.00);
   set n = coalesce(json_value(options, '$.n'), 1);
   set stream = coalesce(json_value(options, '$.stream'), 'false');
   set logprobs = json_value(options, '$.logprobs');
   set echo = coalesce(json_value(options, '$.echo'), 'false');
   set stop_token = json_value(options, '$.stop');
-  set presence_penalty = coalesce(json_value(options, '$.presence_penalty'), 0);
-  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty'), 0);
+  set presence_penalty = coalesce(json_value(options, '$.presence_penalty' returning decimal(4,2)), 0.00);
+  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty' returning decimal(4,2)), 0.00);
   set logit_bias = json_value(options, '$.logit_bias');
   set user_id = json_value(options, '$.user');
   set seed = json_value(options, '$.seed');
@@ -336,11 +362,11 @@ begin
   set req_body = json_object(
     'model': coalesce(model_id, dbsdk_v1.openai_compatible_getmodel()),
     'prompt': prompt,
-    'temperature': temperature,
-    'top_p': top_p,
+    'temperature': cast(temperature as decfloat),
+    'top_p': cast(top_p as decfloat),
     'n': n,
-    'presence_penalty': presence_penalty,
-    'frequency_penalty': frequency_penalty
+    'presence_penalty': cast(presence_penalty as decfloat),
+    'frequency_penalty': cast(frequency_penalty as decfloat)
   );
 
   -- Add optional parameters only if they are not null
@@ -450,24 +476,24 @@ begin
   -- Extract parameters from options
   declare model_id varchar(1000) ccsid 1208;
   declare max_tokens integer default 256;
-  declare temperature decimal(3,1);
-  declare top_p decimal(3,1);
+  declare temperature decimal(4,2);
+  declare top_p decimal(4,2);
   declare n integer;
   declare stop_token varchar(32000) ccsid 1208;
-  declare presence_penalty decimal(3,1);
-  declare frequency_penalty decimal(3,1);
+  declare presence_penalty decimal(4,2);
+  declare frequency_penalty decimal(4,2);
   declare user_id varchar(1000) ccsid 1208;
   declare seed integer;
 
   -- Get parameters from options JSON
   set model_id          = json_value(options, '$.model_id');
   set max_tokens        = coalesce(json_value(options, '$.max_tokens'), 256);
-  set temperature       = coalesce(json_value(options, '$.temperature'), 1);
-  set top_p             = coalesce(json_value(options, '$.top_p'), 1);
+  set temperature       = coalesce(json_value(options, '$.temperature' returning decimal(4,2)), 1.00);
+  set top_p             = coalesce(json_value(options, '$.top_p' returning decimal(4,2)), 1.00);
   set n                 = coalesce(json_value(options, '$.n'), 1);
   set stop_token        = json_value(options, '$.stop');
-  set presence_penalty  = coalesce(json_value(options, '$.presence_penalty'), 0);
-  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty'), 0);
+  set presence_penalty  = coalesce(json_value(options, '$.presence_penalty' returning decimal(4,2)), 0.00);
+  set frequency_penalty = coalesce(json_value(options, '$.frequency_penalty' returning decimal(4,2)), 0.00);
   set user_id           = json_value(options, '$.user');
   set seed              = json_value(options, '$.seed');
 
@@ -527,11 +553,11 @@ begin
   end if;
 
   if (json_value(options, '$.temperature') is not null) then
-    set req_body = JSON_UPDATE(req_body, 'SET', '$.temperature', temperature);
+    set req_body = JSON_UPDATE(req_body, 'SET', '$.temperature', cast(temperature as decfloat));
   end if;
 
   if (json_value(options, '$.top_p') is not null) then
-    set req_body = JSON_UPDATE(req_body, 'SET', '$.top_p', top_p);
+    set req_body = JSON_UPDATE(req_body, 'SET', '$.top_p', cast(top_p as decfloat));
   end if;
 
   if (json_value(options, '$.n') is not null) then
@@ -539,11 +565,11 @@ begin
   end if;
 
   if (json_value(options, '$.presence_penalty') is not null) then
-    set req_body = JSON_UPDATE(req_body, 'SET', '$.presence_penalty', presence_penalty);
+    set req_body = JSON_UPDATE(req_body, 'SET', '$.presence_penalty', cast(presence_penalty as decfloat));
   end if;
 
   if (json_value(options, '$.frequency_penalty') is not null) then
-    set req_body = JSON_UPDATE(req_body, 'SET', '$.frequency_penalty', frequency_penalty);
+    set req_body = JSON_UPDATE(req_body, 'SET', '$.frequency_penalty', cast(frequency_penalty as decfloat));
   end if;
 
   if (stop_token is not null) then
