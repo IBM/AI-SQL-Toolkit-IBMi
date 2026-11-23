@@ -39,7 +39,7 @@ begin
     return response_message;
   end if;
   if(response_message is not null) then
-    call systools.lprintf('Slack publish gave message status: ' concat respose_message);
+    call systools.lprintf('Slack publish gave message status: ' concat response_message);
     signal sqlstate '38002' set message_text = response_message;
     return response_message;
   end if;

@@ -28,9 +28,7 @@ begin
   declare response_message Varchar(10000) CCSID 1208;
   declare response_code int default 500;
   
-  declare http_options varchar(32400) ccsid 1208 default '{"header":"Content-Type,application/vnd.kafka.json.v2+json" ,
-                                                           "header":"Accept,application/vnd.kafka.v2+json" 
-                                                          }';
+  declare http_options varchar(32400) ccsid 1208 default '{"headers":{"Content-Type":"application/vnd.kafka.json.v2+json","Accept":"application/vnd.kafka.v2+json"}}';
   set fullUrl = dbsdk_v1.kafka_getprotocol() concat '://' concat dbsdk_v1.kafka_getbroker() concat ':' concat dbsdk_v1.kafka_getport() concat '/topics/' concat dbsdk_v1.kafka_gettopic(topic);
 
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER
@@ -43,7 +41,8 @@ begin
   set apierr = json_value(response_message, '$.offsets[0].error');
   if(apierr is not null) then
     call systools.lprintf('Kafka publish returned error: ' concat apierr);
-  else 
+    return apierr;
+  else
     set apierr = 'An unknown error has occurred';
   end if;
   
