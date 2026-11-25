@@ -42,8 +42,6 @@ begin
   if(apierr is not null) then
     call systools.lprintf('Kafka publish returned error: ' concat apierr);
     return apierr;
-  else
-    set apierr = 'An unknown error has occurred';
   end if;
   
   if (response_code = 200) then

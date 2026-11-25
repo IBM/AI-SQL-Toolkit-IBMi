@@ -279,13 +279,15 @@ begin
 end;
 
 -- ## JSON Object Update Function
--- 
--- **Description:** Merges two JSON objects into one
--- 
+--
+-- **Description:** Merges two JSON objects into one. The merge is shallow: when a key exists in both
+-- objects, the value from `update_object` replaces the whole value from `base_object`.
+--
 -- **Input parameters:**
 -- - `base_object` (required): The base JSON object
--- - `update_object` (required): The object to merge into the base object
--- 
+-- - `update_object` (required): The object to merge into the base object. A value that is neither
+--   NULL, empty, nor a JSON object is rejected with SQLSTATE `38002`.
+--
 -- **Return type:** 
 -- - `clob(64K) ccsid 1208`
 -- 
@@ -322,11 +324,21 @@ begin
   declare item_start integer default 1;
   declare item_str varchar(32000) ccsid 1208;
   declare has_overwrite_key boolean default false;
+  declare closing integer default 0;
 
-  -- 1. Handle NULL cases
+  -- 1. Handle NULL and empty cases
   -- "two NULLs give {}"
   if base_object is null and update_object is null then
     return '{}';
+  end if;
+
+  -- update_object must be a JSON object. This is checked before the early returns below, so it is
+  -- rejected even when base_object is empty. Step 4 always strips the first and last character of
+  -- update_object, so anything that is not a JSON object would silently produce invalid JSON.
+  if update_object is not null and trim(update_object) <> '' then
+    if not (left(trim(update_object), 1) = '{' and right(trim(update_object), 1) = '}') then
+      signal sqlstate '38002' set message_text = 'update_object must be a JSON object.';
+    end if;
   end if;
 
   -- "a NULL base object returns the update object"
@@ -345,12 +357,22 @@ begin
   end if;
 
   -- 2. Build the list of keys to overwrite from the update_object
-  set clean_update = trim(update_object);
-  if (left(clean_update, 1) = '{' and right(clean_update, 1) = '}') then
-    set clean_update = substring(clean_update, 2, length(clean_update) - 2);
+  -- Strip the braces without combining LENGTH with SUBSTRING: for CCSID 1208 text LENGTH counts
+  -- bytes but SUBSTRING counts characters, so substring(x, 2, length(x) - 2) keeps the closing
+  -- brace when the text contains non-ASCII characters. Instead drop the first character with
+  -- SUBSTRING(x, 2), then drop exactly one closing brace: remove the whole run of trailing
+  -- braces and put back all but one (each brace is one byte, so the byte counts are exact).
+  set clean_update = substring(trim(update_object), 2);
+  set closing = length(clean_update) - length(trim(trailing '}' from clean_update));
+  set clean_update = trim(trailing '}' from clean_update) concat repeat('}', closing - 1);
+
+  -- an update object with only whitespace between the braces, such as '{ }', is empty too
+  if trim(clean_update) = '' then
+    return base_object;
   end if;
 
-  set keys_to_overwrite = ',';
+  -- Each key is stored as ,"key", so that a key containing a comma can't match a different key.
+  set keys_to_overwrite = '';
   set len = length(clean_update);
   set pos = 1;
   
@@ -370,7 +392,7 @@ begin
             elseif not in_string and curly_depth = 0 and square_depth = 0 then
               set key_end = pos - 1;
               set key_name = substring(clean_update, key_start, key_end - key_start + 1);
-              set keys_to_overwrite = keys_to_overwrite concat key_name concat ',';
+              set keys_to_overwrite = keys_to_overwrite concat ',"' concat key_name concat '",';
               set skip_until_comma = true;
             end if;
           end if;
@@ -397,7 +419,10 @@ begin
   -- 3. Filter out those keys from the base_object
   set clean_base = trim(base_object);
   if (left(clean_base, 1) = '{' and right(clean_base, 1) = '}') then
-    set clean_base = substring(clean_base, 2, length(clean_base) - 2);
+    -- same brace stripping as for clean_update above
+    set clean_base = substring(clean_base, 2);
+    set closing = length(clean_base) - length(trim(trailing '}' from clean_base));
+    set clean_base = trim(trailing '}' from clean_base) concat repeat('}', closing - 1);
   end if;
 
   set kept_base = '';
@@ -427,7 +452,7 @@ begin
             elseif not in_string and curly_depth = 0 and square_depth = 0 then
               set key_end = pos - 1;
               set key_name = substring(clean_base, key_start, key_end - key_start + 1);
-              if locate(',' concat key_name concat ',', keys_to_overwrite) > 0 then
+              if locate(',"' concat key_name concat '",', keys_to_overwrite) > 0 then
                 set has_overwrite_key = true;
               else
                 set has_overwrite_key = false;
@@ -485,6 +510,6 @@ begin
   return '{' concat
          kept_base concat
          ', ' concat
-         substring(trim(update_object), 2, length(trim(update_object)) - 2) concat
+         clean_update concat
          '}';
 end;

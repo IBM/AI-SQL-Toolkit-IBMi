@@ -9,8 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import com.ibm.dbsdk.harness.HarnessConfig;
-
 /**
  * {@code json_object_update}, with the cases and expected results formerly documented in {@code test/test_json_object_update.sql}. Results are compared as JSON, and duplicate keys count as
  * invalid.
@@ -43,8 +41,7 @@ final class JsonObjectUpdateTest extends ToolkitTest {
     }
 
     @Test
-    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
-    @DisplayName("two NULL objects give {} [known issue]")
+    @DisplayName("two NULL objects give {}")
     void bothNull() throws SQLException {
         assertMerge(null, null, "{}");
     }
@@ -127,8 +124,7 @@ final class JsonObjectUpdateTest extends ToolkitTest {
      *             if the call fails
      */
     @Test
-    @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
-    @DisplayName("update values overwrite base values for the same key [known issue]")
+    @DisplayName("update values overwrite base values for the same key")
     void overwriteProperties() throws SQLException {
         assertMerge("{\"name\": \"John\", \"age\": 30}", "{\"age\": 31, \"occupation\": \"Developer\"}", "{\"name\": \"John\", \"age\": 31, \"occupation\": \"Developer\"}");
     }
@@ -137,5 +133,45 @@ final class JsonObjectUpdateTest extends ToolkitTest {
     @DisplayName("tolerates whitespace around and inside the objects")
     void whitespace() throws SQLException {
         assertMerge("  {  \"name\"  :  \"John\"  }  ", "  {  \"age\"  :  30  }  ", "{\"name\": \"John\", \"age\": 30}");
+    }
+
+    @Test
+    @DisplayName("an update object with only whitespace between the braces returns the base object")
+    void whitespaceOnlyUpdate() throws SQLException {
+        assertMerge("{\"a\": 1}", "{ }", "{\"a\": 1}");
+    }
+
+    @Test
+    @DisplayName("an overwritten key takes the update's value and the other base keys are kept")
+    void overwriteKeepsOtherKeys() throws SQLException {
+        assertMerge("{\"a\": 1, \"b\": 2}", "{\"a\": 9}", "{\"a\": 9, \"b\": 2}");
+    }
+
+    @Test
+    @DisplayName("a key containing a comma doesn't remove other keys")
+    void keyWithComma() throws SQLException {
+        assertMerge("{\"a\": 1, \"b\": 2}", "{\"a,b\": 3}", "{\"a\": 1, \"b\": 2, \"a,b\": 3}");
+    }
+
+    @Test
+    @DisplayName("keeps escaped quotes and commas inside strings, and replaces a nested object as a whole")
+    void escapedAndNested() throws SQLException {
+        assertMerge("{\"n\": {\"x\": 1}, \"s\": \"a,\\\"b\\\"\"}", "{\"n\": {\"y\": 2}}", "{\"s\": \"a,\\\"b\\\"\", \"n\": {\"y\": 2}}");
+    }
+
+    @Test
+    @DisplayName("handles non-ASCII text (multi-byte CCSID 1208 characters)")
+    void nonAscii() throws SQLException {
+        assertMerge("{\"n\u00e9v\": \"\u00e9\"}", "{\"x\": \"\u00fc\"}", "{\"n\u00e9v\": \"\u00e9\", \"x\": \"\u00fc\"}");
+        assertMerge("{\"n\u00e9v\": \"\u00e9\", \"k\": 1}", "{\"n\u00e9v\": \"\u00fc\"}", "{\"k\": 1, \"n\u00e9v\": \"\u00fc\"}");
+    }
+
+    @Test
+    @DisplayName("an update that is not a JSON object is rejected with SQLSTATE 38002, even when the base is empty")
+    void rejectsNonObjectUpdate() {
+        final String call = "dbsdk_v1.json_object_update(" + STR + ", " + STR + ")";
+        assertSqlState("38002", () -> clobValue(call, "{\"a\": 1}", "[1, 2]"));
+        assertSqlState("38002", () -> clobValue(call, "{}", "[1, 2]"));
+        assertSqlState("38002", () -> clobValue(call, null, "\"abc\""));
     }
 }
