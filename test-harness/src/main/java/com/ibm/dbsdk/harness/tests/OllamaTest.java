@@ -42,14 +42,14 @@ final class OllamaTest extends ToolkitTest {
     @Test
     @DisplayName("getters prefer an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
-        assertEquals("explicit-host", value("dbsdk_v1.ollama_getserver(" + STR + ")", "explicit-host"));
-        assertEquals("1234", value("dbsdk_v1.ollama_getport(" + INT + ")", Integer.valueOf(1234)));
-        assertEquals("explicit-model", value("dbsdk_v1.ollama_getmodel(" + STR + ")", "explicit-model"));
-        assertEquals("https", value("dbsdk_v1.ollama_getprotocol(" + STR + ")", "https"));
+        assertEquals("explicit-host", value("aisqltkt.ollama_getserver(" + STR + ")", "explicit-host"));
+        assertEquals("1234", value("aisqltkt.ollama_getport(" + INT + ")", Integer.valueOf(1234)));
+        assertEquals("explicit-model", value("aisqltkt.ollama_getmodel(" + STR + ")", "explicit-model"));
+        assertEquals("https", value("aisqltkt.ollama_getprotocol(" + STR + ")", "https"));
     }
 
     private String generate(final String _prompt) throws SQLException {
-        return clobValue("dbsdk_v1.ollama_generate(" + STR + ")", _prompt);
+        return clobValue("aisqltkt.ollama_generate(" + STR + ")", _prompt);
     }
 
     /**
@@ -110,7 +110,7 @@ final class OllamaTest extends ToolkitTest {
     @Test
     @DisplayName("generate uses the model_id argument when given")
     void generateWithExplicitModel() throws Exception {
-        final String reply = clobValue("dbsdk_v1.ollama_generate(" + STR + ", model_id => " + STR + ")", "Hello", "llama3:latest");
+        final String reply = clobValue("aisqltkt.ollama_generate(" + STR + ", model_id => " + STR + ")", "Hello", "llama3:latest");
         assertEquals("Mock ollama response from llama3:latest: Hello", reply);
         assertEquals("llama3:latest", lastRequestJson("ollama").path("model").asText());
     }
@@ -124,9 +124,9 @@ final class OllamaTest extends ToolkitTest {
     @Test
     @DisplayName("*forjob settings are returned by the getters")
     void jobSettingsAreReturnedByGetters() throws SQLException {
-        assertEquals(mockHost(), value("dbsdk_v1.ollama_getserver()"));
-        assertEquals(String.valueOf(mockPort()), value("dbsdk_v1.ollama_getport()"));
-        assertEquals(MODEL, value("dbsdk_v1.ollama_getmodel()"));
-        assertEquals("http", value("dbsdk_v1.ollama_getprotocol()"));
+        assertEquals(mockHost(), value("aisqltkt.ollama_getserver()"));
+        assertEquals(String.valueOf(mockPort()), value("aisqltkt.ollama_getport()"));
+        assertEquals(MODEL, value("aisqltkt.ollama_getmodel()"));
+        assertEquals("http", value("aisqltkt.ollama_getprotocol()"));
     }
 }

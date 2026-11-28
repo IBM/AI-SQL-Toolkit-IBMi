@@ -5,7 +5,7 @@
 // Purpose: Slack configuration screen for editing user settings
 //
 // Compilation:
-//   CRTBNDRPG PGM(DBSDK_V1/CFGSLACK) +
+//   CRTBNDRPG PGM(AISQLTKT/CFGSLACK) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGSLACK.rpgle') +
 //             DFTACTGRP(*NO) +
 //             ACTGRP(*NEW) +
@@ -67,7 +67,7 @@ Dow Not Exit;
     Exec SQL
       SELECT USRPRF
       INTO :UsrPrf
-      FROM DBSDK_V1.CONF
+      FROM AISQLTKT.CONF
       WHERE USRPRF = :UsrPrf;
     
     If SQLCODE <> 0;
@@ -106,7 +106,7 @@ Dcl-Proc LoadConfiguration;
   Exec SQL
     SELECT IFNULL(slack_webhook, '')
     INTO :FullWebhook
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrf;
   
   If SQLCODE = 0;
@@ -135,7 +135,7 @@ Dcl-Proc SaveConfiguration;
   
   // Call SQL procedure to update configuration
   Exec SQL
-    CALL DBSDK_V1.CONF_UPDATE_SLACK(
+    CALL AISQLTKT.CONF_UPDATE_SLACK(
       :UsrPrf,
       :FullWebhook
     );

@@ -12,6 +12,8 @@ The navigation pane on the left lists technologies supported by this experimenta
 
 <Aside type="note">This project is still in bringup state and should not be deployed to production!</Aside>
 
+<Aside type="caution" title="Upgrading from dbsdk_v1?">The toolkit schema was renamed from `dbsdk_v1` to `aisqltkt`. Existing code must be updated; see the [migration guide](/AI-SQL-Toolkit-IBMi/migrating-to-aisqltkt/).</Aside>
+
 ----
 ## Installation
 
@@ -24,7 +26,7 @@ To install on IBM i, you need to clone this git repository onto an IBM i. You ca
 
 Once the repo sources are in the IFS, then you can use GNU Make to build the SDK. GNU Make, `gmake`, is available in yum. Read more on the [IBM i OSS](https://ibmi-oss-docs.readthedocs.io/en/latest/yum/README.html#installation) docs.
 
-Everything will get built into the `dbsdk_v1` library.
+Everything will get built into the `aisqltkt` library.
 
 ```sh
 cd /where/you/extracted/the/repo

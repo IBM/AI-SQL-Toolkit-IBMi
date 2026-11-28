@@ -119,7 +119,7 @@ public final class WatsonxHandler extends ServiceHandler {
         directives.applyDelay();
 
         if (isBlank(_call.getQuery().get("version"))) {
-            wxError(_call, 400, "invalid_request_entity", "Missing query parameter 'version'. Set dbsdk_v1.wx_apiVersion, e.g. '2023-07-07'.");
+            wxError(_call, 400, "invalid_request_entity", "Missing query parameter 'version'. Set aisqltkt.wx_apiVersion, e.g. '2023-07-07'.");
             return;
         }
         if (!isAuthorized(_call)) {
@@ -139,7 +139,7 @@ public final class WatsonxHandler extends ServiceHandler {
             return;
         }
         if (isBlank(Json.text(body, "project_id")) && isBlank(Json.text(body, "space_id"))) {
-            wxError(_call, 400, "json_validation_error", "Either project_id or space_id must be specified. Call dbsdk_v1.wx_setprojectidforjob first.");
+            wxError(_call, 400, "json_validation_error", "Either project_id or space_id must be specified. Call aisqltkt.wx_setprojectidforjob first.");
             return;
         }
         if (!isKnownModel(modelId)) {

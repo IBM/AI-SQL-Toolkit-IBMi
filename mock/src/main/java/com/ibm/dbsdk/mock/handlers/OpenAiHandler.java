@@ -431,7 +431,7 @@ public final class OpenAiHandler extends ServiceHandler {
         } else if (path.endsWith("/chat/completions")) {
             chat(_call);
         } else if (isGemini()) {
-            error(_call, 404, "The legacy /completions endpoint is not supported by this server. Use /chat/completions (dbsdk_v1.openai_compatible_chat_generate).", "not_found", null, null);
+            error(_call, 404, "The legacy /completions endpoint is not supported by this server. Use /chat/completions (aisqltkt.openai_compatible_chat_generate).", "not_found", null, null);
         } else {
             completions(_call);
         }

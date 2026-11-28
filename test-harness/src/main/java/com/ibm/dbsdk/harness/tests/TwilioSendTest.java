@@ -59,7 +59,7 @@ final class TwilioSendTest extends ToolkitTest {
     }
 
     private String send(final String _to, final String _message) throws SQLException {
-        return value("dbsdk_v1.twilio_sendsms(" + STR + ", " + STR + ")", _to, _message);
+        return value("aisqltkt.twilio_sendsms(" + STR + ", " + STR + ")", _to, _message);
     }
 
     /**

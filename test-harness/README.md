@@ -1,6 +1,6 @@
 # dbsdk test harness
 
-An end-to-end test suite for the `dbsdk_v1` SQL toolkit. It connects to Db2 for i through the
+An end-to-end test suite for the `aisqltkt` SQL toolkit. It connects to Db2 for i through the
 [Mapepire JDBC driver](https://github.com/Mapepire-IBMi/mapepire-jdbc), calls the toolkit's SQL
 functions and procedures, and checks both what they return and what they actually sent over HTTP.
 
@@ -17,9 +17,9 @@ accounts or API keys are needed.
 ```
  this machine                     IBM i                              mock host
  ------------                     -----                              ---------
- test harness --JDBC/Mapepire--> mapepire-server --SQL--> dbsdk_v1 --HTTP--> dbsdk mock server
+ test harness --JDBC/Mapepire--> mapepire-server --SQL--> aisqltkt --HTTP--> dbsdk mock server
       |                                                                          ^
-      +---------------- inspects /mock/requests (what dbsdk_v1 sent) -----------+
+      +---------------- inspects /mock/requests (what aisqltkt sent) -----------+
 ```
 
 The toolkit's HTTP calls come **from the IBM i**, so the IBM i must be able to reach the mock.
@@ -28,7 +28,7 @@ and the harness on the IBM i, and everything is `localhost`.
 
 ## Prerequisites
 
-1. **The toolkit is installed** in schema `DBSDK_V1` (see the root `makefile`, which also builds
+1. **The toolkit is installed** in schema `AISQLTKT` (see the root `makefile`, which also builds
    the `CONF_*` admin procedures from `src/admin/sql`; their tests are skipped if they're missing).
 2. **mapepire-server is running.** The default is `localhost:8076`.
 3. **The mock server is running** somewhere the IBM i can reach, by default `localhost:8888`:
@@ -36,7 +36,7 @@ and the harness on the IBM i, and everything is `localhost`.
    java -jar dbsdk-mock-server-1.0.0-jar-with-dependencies.jar --port 8888
    ```
 4. **The user profile** you connect as needs `*EXECUTE` on the toolkit's routines and
-   `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `DBSDK_V1.CONF`, plus `READ`/`WRITE` on its global
+   `SELECT`/`INSERT`/`UPDATE`/`DELETE` on `AISQLTKT.CONF`, plus `READ`/`WRITE` on its global
    variables. The schema owner has all of this; for another profile, run
    [`sql/grant_test_user.sql`](sql/grant_test_user.sql) as the owner.
 5. **XMLSERVICE** for the PASE tests (`--skip pase` otherwise).
@@ -44,7 +44,7 @@ and the harness on the IBM i, and everything is `localhost`.
 ## `make test`
 
 From the repository root on IBM i, `make test` does everything:
-1. Builds the toolkit into `DBSDK_V1`.
+1. Builds the toolkit into `AISQLTKT`.
 2. Builds the mock server and this harness with `/QOpenSys/pkgs/bin/mvn`.
 3. Starts the mock on `127.0.0.1:8888` and runs the suite against mapepire-server on `localhost:8076`.
 4. Stops the mock again.
@@ -115,7 +115,7 @@ java -jar dbsdk-test-harness-...jar --list
 
 Before any test runs, the harness checks four things and reports problems once, clearly:
 - the connection works;
-- `DBSDK_V1` contains routines;
+- `AISQLTKT` contains routines;
 - the IBM i can reach the mock (it calls `QSYS2.HTTP_GET` on the mock's health URL);
 - this machine can reach the mock.
 
@@ -178,7 +178,7 @@ until the bug is fixed, and you can leave them out with `--skip known-issue`:
 
 ## Side effects
 
-- **Your `CONF` row:** the `conf` tests change the `DBSDK_V1.CONF` row of the user you connect
+- **Your `CONF` row:** the `conf` tests change the `AISQLTKT.CONF` row of the user you connect
   as. The row is saved before those tests and written back afterwards, or deleted if it didn't
   exist before. The tests also create and delete a row for the fictional profile `HARNESSX1`.
   Use `--skip conf` to leave `CONF` alone entirely.

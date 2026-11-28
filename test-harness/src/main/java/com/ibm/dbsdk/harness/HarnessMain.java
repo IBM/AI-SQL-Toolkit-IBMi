@@ -172,12 +172,12 @@ public final class HarnessMain {
         _logger.printfln("Connecting to %s as %s", _config.getJdbcUrl(), _config.getUser());
         try (final Db db = Db.open(_config)) {
             _logger.printfln("Connected; job user is %s", db.queryString("values current_user"));
-            final String routines = db.queryString("select count(*) from qsys2.sysroutines where routine_schema = 'DBSDK_V1'");
+            final String routines = db.queryString("select count(*) from qsys2.sysroutines where routine_schema = 'AISQLTKT'");
             if (null == routines || 0 == Integer.parseInt(routines.trim())) {
-                _logger.println_err("No routines found in schema DBSDK_V1. Build and install the toolkit (see the root makefile) before running the tests.");
+                _logger.println_err("No routines found in schema AISQLTKT. Build and install the toolkit (see the root makefile) before running the tests.");
                 return false;
             }
-            _logger.printfln("Found %s routines in DBSDK_V1", routines.trim());
+            _logger.printfln("Found %s routines in AISQLTKT", routines.trim());
             checkMockFromIbmi(db, _config, _logger);
         } catch (final SQLException _e) {
             _logger.println_err("Could not connect: " + _e.getMessage());

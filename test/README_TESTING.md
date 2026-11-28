@@ -1,7 +1,7 @@
 # Testing
 
 The toolkit's tests are in [`test-harness/`](../test-harness/README.md). It's a JDBC test suite that
-calls the `dbsdk_v1` SQL functions through Mapepire, and uses the [mock server](../mock/README.md)
+calls the `aisqltkt` SQL functions through Mapepire, and uses the [mock server](../mock/README.md)
 in place of every external service (watsonx, Ollama, OpenAI-compatible endpoints, Kafka, Slack and
 Twilio). No live endpoints, API keys or cloud accounts are needed.
 

@@ -1,0 +1,67 @@
+---
+title: Migrating from dbsdk_v1
+Description: The toolkit schema was renamed from dbsdk_v1 to aisqltkt. Steps to move an existing installation.
+sidebar:
+    order: 1
+---
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Breaking change">
+The toolkit now installs into the **`AISQLTKT`** schema instead of **`DBSDK_V1`**. Nothing else changed: the
+function and procedure names, parameters and behavior are the same. Every existing call must be updated, e.g.
+`dbsdk_v1.json_object_update(...)` is now `aisqltkt.json_object_update(...)`.
+</Aside>
+
+A new install needs none of this; just follow the [installation steps](/AI-SQL-Toolkit-IBMi/#installation).
+If you already have `DBSDK_V1`, do the following.
+
+## 1. Install the new schema
+
+```sh
+cd /where/you/extracted/the/repo
+gmake
+```
+
+This creates `AISQLTKT` and leaves `DBSDK_V1` untouched, so both can exist while you migrate.
+
+## 2. Copy your configuration
+
+Settings (API keys, endpoints, etc.) live in the `CONF` table, one row per user profile, and row access
+control only lets each user see their own row. Run this **as each user** who has a row:
+
+```sql
+INSERT INTO aisqltkt.conf SELECT * FROM dbsdk_v1.conf;
+```
+
+If you installed an older version of the toolkit, `CONF` may have different columns. In that case name the
+columns that exist in both, or re-enter the settings with the `CONF_UPDATE_*` procedures or the `CFGMENU` screens.
+
+Job-level settings made with the `*ForJob` procedures (for example `wx_SetApiKeyForJob`) are not stored anywhere.
+They are lost when the job ends, so there is nothing to copy.
+
+<Aside type="note">
+`CONF` row access control also lets a user profile named after the schema see every row. That profile is now
+`AISQLTKT` (it was `DBSDK_V1`). Create it if you relied on it.
+</Aside>
+
+## 3. Update everything that calls the toolkit
+
+Change `dbsdk_v1` to `aisqltkt` in:
+
+- SQL, views and routines that call the toolkit, including embedded SQL in RPG and COBOL sources, then recompile them
+- CL programs and job descriptions that add the library to the library list (`ADDLIBLE`)
+- `CALL PGM(DBSDK_V1/CFGMENU)` becomes `CALL PGM(AISQLTKT/CFGMENU)` (the `CFG*` admin programs are built into the new schema by `src/admin/build.sh`)
+
+Other users and programs need authority to the new schema. `GRANT`s made on `DBSDK_V1` do not carry over.
+
+## 4. Check and clean up
+
+```sql
+VALUES aisqltkt.json_object_update('{"a":1}', '{"b":2}');
+```
+
+Once everything works against `AISQLTKT`, remove the old schema:
+
+```sql
+DROP SCHEMA dbsdk_v1 CASCADE;
+```

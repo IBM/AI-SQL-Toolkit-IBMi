@@ -37,8 +37,8 @@ final class TwilioTest extends ToolkitTest {
     @Test
     @DisplayName("base URL defaults to https://api.twilio.com")
     void baseUrlDefault() throws SQLException {
-        assumeTrue(null == value("(select twilio_baseurl from dbsdk_v1.conf where usrprf = current_user)"), "this user's CONF row sets a Twilio base URL, so the default cannot be observed");
-        assertEquals("https://api.twilio.com", value("dbsdk_v1.twilio_getbaseurl()"));
+        assumeTrue(null == value("(select twilio_baseurl from aisqltkt.conf where usrprf = current_user)"), "this user's CONF row sets a Twilio base URL, so the default cannot be observed");
+        assertEquals("https://api.twilio.com", value("aisqltkt.twilio_getbaseurl()"));
     }
 
     /**
@@ -52,10 +52,10 @@ final class TwilioTest extends ToolkitTest {
     void baseUrlJobSettingAndArgument() throws SQLException {
         call("twilio_setbaseurlforjob(" + STR + ")", "http://job-twilio.example:8080/");
         try {
-            assertEquals("http://job-twilio.example:8080", value("dbsdk_v1.twilio_getbaseurl()"));
-            assertEquals("http://arg-twilio.example", value("dbsdk_v1.twilio_getbaseurl(" + STR + ")", "http://arg-twilio.example"));
+            assertEquals("http://job-twilio.example:8080", value("aisqltkt.twilio_getbaseurl()"));
+            assertEquals("http://arg-twilio.example", value("aisqltkt.twilio_getbaseurl(" + STR + ")", "http://arg-twilio.example"));
             call("twilio_setbaseurlforjob(" + STR + ")", "");
-            assertEquals("https://api.twilio.com", value("dbsdk_v1.twilio_getbaseurl()"));
+            assertEquals("https://api.twilio.com", value("aisqltkt.twilio_getbaseurl()"));
         } finally {
             call("twilio_setbaseurlforjob(" + STR + ")", (Object) null);
         }
@@ -64,16 +64,16 @@ final class TwilioTest extends ToolkitTest {
     @Test
     @DisplayName("getters prefer an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
-        assertEquals("5559998888", value("dbsdk_v1.twilio_getnumber(" + STR + ")", "5559998888"));
-        assertEquals("ACexplicitSid", value("dbsdk_v1.twilio_getsid(" + STR + ")", "ACexplicitSid"));
-        assertEquals("explicit-token", value("dbsdk_v1.twilio_getauthtoken(" + STR + ")", "explicit-token"));
+        assertEquals("5559998888", value("aisqltkt.twilio_getnumber(" + STR + ")", "5559998888"));
+        assertEquals("ACexplicitSid", value("aisqltkt.twilio_getsid(" + STR + ")", "ACexplicitSid"));
+        assertEquals("explicit-token", value("aisqltkt.twilio_getauthtoken(" + STR + ")", "explicit-token"));
     }
 
     @Test
     @DisplayName("*forjob settings are returned by the getters")
     void jobSettingsAreReturnedByGetters() throws SQLException {
-        assertEquals("5550001111", value("dbsdk_v1.twilio_getnumber()"));
-        assertEquals("ACjobAccountSid", value("dbsdk_v1.twilio_getsid()"));
-        assertEquals("job-auth-token", value("dbsdk_v1.twilio_getauthtoken()"));
+        assertEquals("5550001111", value("aisqltkt.twilio_getnumber()"));
+        assertEquals("ACjobAccountSid", value("aisqltkt.twilio_getsid()"));
+        assertEquals("job-auth-token", value("aisqltkt.twilio_getauthtoken()"));
     }
 }

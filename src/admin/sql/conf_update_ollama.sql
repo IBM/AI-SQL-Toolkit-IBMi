@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - CONF_UPDATE_OLLAMA Procedure
 -- ============================================================================
 -- Purpose: Update Ollama AI configuration for a specific user in the
---          DBSDK_V1.CONF table. Modifies protocol, server address, port,
+--          AISQLTKT.CONF table. Modifies protocol, server address, port,
 --          and model settings.
 --
 -- Compilation:
@@ -24,7 +24,7 @@
 --   IN p_port INT - Port number
 --   IN p_model VARCHAR(1000) - Model name
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_OLLAMA(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_OLLAMA(
     IN p_usrprf VARCHAR(10),
     IN p_protocol VARCHAR(16),
     IN p_server VARCHAR(1000),
@@ -38,7 +38,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET ollama_protocol = p_protocol,
         ollama_server = p_server,
         ollama_port = p_port,

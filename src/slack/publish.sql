@@ -14,7 +14,7 @@
 -- **Return value:**
 -- - Response message from underlying Slack API, if there was one
 
-create or replace function dbsdk_v1.slack_sendmessage(msg varchar(32000) ccsid 1208 default NULL, webhook varchar(1000) ccsid 1208 default NULL)
+create or replace function aisqltkt.slack_sendmessage(msg varchar(32000) ccsid 1208 default NULL, webhook varchar(1000) ccsid 1208 default NULL)
   RETURNS varchar(32000) ccsid 1208
   modifies sql data
   not deterministic
@@ -28,7 +28,7 @@ begin
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER
   into response_message, response_header
   from table(QSYS2.HTTP_POST_VERBOSE(
-                        dbsdk_v1.slack_getwebhook(webhook),
+                        aisqltkt.slack_getwebhook(webhook),
                         json_object('text': msg),
                         json_object('header': 'Content-type,application/json')
                         ));

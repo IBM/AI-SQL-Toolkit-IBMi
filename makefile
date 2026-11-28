@@ -1,4 +1,4 @@
-SCHEMA=dbsdk_v1
+SCHEMA=aisqltkt
 OBJS =  $(shell ./getmaketargets.sh)
 
 # Maven for the Java projects (mock server and test harness): the IBM i open source package

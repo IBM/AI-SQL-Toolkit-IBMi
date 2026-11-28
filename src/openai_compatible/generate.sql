@@ -53,15 +53,15 @@ begin
   for stale_func as
     select specific_name
       from qsys2.sysroutines
-      where routine_schema = 'DBSDK_V1'
+      where routine_schema = 'AISQLTKT'
         and routine_name in ('OPENAI_COMPATIBLE_GENERATE', 'OPENAI_COMPATIBLE_GENERATE_JSON')
         and in_parms <> 4
   do
-    execute immediate 'drop specific function dbsdk_v1.' concat stale_func.specific_name;
+    execute immediate 'drop specific function aisqltkt.' concat stale_func.specific_name;
   end for;
 end;
 
-create or replace function dbsdk_v1.openai_compatible_generate(
+create or replace function aisqltkt.openai_compatible_generate(
   prompt varchar(32000) ccsid 1208,
   options varchar(32000) ccsid 1208 default '{}',
   api_key_  varchar(8000) ccsid 1208 default NULL,
@@ -121,7 +121,7 @@ begin
   
   -- Get API key for authentication
   if (api_key_ is null) then
-    set api_key = dbsdk_v1.openai_compatible_getapikey();
+    set api_key = aisqltkt.openai_compatible_getapikey();
   else
     set api_key = api_key_;
   end if;
@@ -131,10 +131,10 @@ begin
     set fullUrl = base_url concat '/completions';
   else
     -- Use configured endpoint settings
-    set fullUrl = dbsdk_v1.openai_compatible_getprotocol() concat '://' 
-                concat dbsdk_v1.openai_compatible_getserver() 
-                concat ':' concat dbsdk_v1.openai_compatible_getport() 
-                concat dbsdk_v1.openai_compatible_getbasepath() 
+    set fullUrl = aisqltkt.openai_compatible_getprotocol() concat '://' 
+                concat aisqltkt.openai_compatible_getserver() 
+                concat ':' concat aisqltkt.openai_compatible_getport() 
+                concat aisqltkt.openai_compatible_getbasepath() 
                 concat '/completions';
   end if;
   
@@ -158,7 +158,7 @@ begin
   
   -- Build the request body with required parameters
   set req_body = json_object(
-    'model': coalesce(model_id, dbsdk_v1.openai_compatible_getmodel()),
+    'model': coalesce(model_id, aisqltkt.openai_compatible_getmodel()),
     'prompt': prompt,
     'max_tokens': max_tokens,
     'temperature': cast(temperature as decfloat),
@@ -262,7 +262,7 @@ end;
 -- Unsupported options:
 --  - set best_of = coalesce(json_value(options, '$.best_of'), 1);
 
-create or replace function dbsdk_v1.openai_compatible_generate_json(
+create or replace function aisqltkt.openai_compatible_generate_json(
   prompt varchar(32000) ccsid 1208,
   options varchar(32000) ccsid 1208 default '{}',
   api_key_  varchar(8000) ccsid 1208 default NULL,
@@ -322,7 +322,7 @@ begin
   
   -- Get API key for authentication
   if (api_key_ is null) then
-    set api_key = dbsdk_v1.openai_compatible_getapikey();
+    set api_key = aisqltkt.openai_compatible_getapikey();
   else
     set api_key = api_key_;
   end if;
@@ -333,10 +333,10 @@ begin
     set fullUrl = base_url concat '/completions';
   else
     -- Use configured endpoint settings
-    set fullUrl = dbsdk_v1.openai_compatible_getprotocol() concat '://' 
-                concat dbsdk_v1.openai_compatible_getserver() 
-                concat ':' concat dbsdk_v1.openai_compatible_getport() 
-                concat dbsdk_v1.openai_compatible_getbasepath() 
+    set fullUrl = aisqltkt.openai_compatible_getprotocol() concat '://' 
+                concat aisqltkt.openai_compatible_getserver() 
+                concat ':' concat aisqltkt.openai_compatible_getport() 
+                concat aisqltkt.openai_compatible_getbasepath() 
                 concat '/completions';
   end if;
   
@@ -360,7 +360,7 @@ begin
   
   -- Build the request body with required parameters
   set req_body = json_object(
-    'model': coalesce(model_id, dbsdk_v1.openai_compatible_getmodel()),
+    'model': coalesce(model_id, aisqltkt.openai_compatible_getmodel()),
     'prompt': prompt,
     'temperature': cast(temperature as decfloat),
     'top_p': cast(top_p as decfloat),
@@ -452,7 +452,7 @@ end;
 -- - The text content of `choices[0].message.content` from the API response,
 --   or the full JSON body if that path cannot be parsed.
 
-create or replace function dbsdk_v1.openai_compatible_chat_generate(
+create or replace function aisqltkt.openai_compatible_chat_generate(
   prompt varchar(32000) ccsid 1208,
   options varchar(32000) ccsid 1208 default '{}',
   api_key_  varchar(8000) ccsid 1208 default NULL,
@@ -499,7 +499,7 @@ begin
 
   -- Get API key for authentication
   if (api_key_ is null) then
-    set api_key = dbsdk_v1.openai_compatible_getapikey();
+    set api_key = aisqltkt.openai_compatible_getapikey();
   else
     set api_key = api_key_;
   end if;
@@ -508,10 +508,10 @@ begin
   if (base_url is not null and trim(base_url) <> '') then
     set fullUrl = base_url concat '/chat/completions';
   else
-    set fullUrl = dbsdk_v1.openai_compatible_getprotocol() concat '://'
-                concat dbsdk_v1.openai_compatible_getserver()
-                concat ':' concat dbsdk_v1.openai_compatible_getport()
-                concat dbsdk_v1.openai_compatible_getbasepath()
+    set fullUrl = aisqltkt.openai_compatible_getprotocol() concat '://'
+                concat aisqltkt.openai_compatible_getserver()
+                concat ':' concat aisqltkt.openai_compatible_getport()
+                concat aisqltkt.openai_compatible_getbasepath()
                 concat '/chat/completions';
   end if;
 
@@ -541,7 +541,7 @@ begin
   -- some endpoints (e.g. Gemini) return 400 for unrecognised/unsupported
   -- fields even when they carry OpenAI default values.
   set req_body = json_object(
-    'model':    coalesce(model_id, dbsdk_v1.openai_compatible_getmodel()),
+    'model':    coalesce(model_id, aisqltkt.openai_compatible_getmodel()),
     'messages': json_array(
                   json_object('role': 'user', 'content': prompt)
                 )

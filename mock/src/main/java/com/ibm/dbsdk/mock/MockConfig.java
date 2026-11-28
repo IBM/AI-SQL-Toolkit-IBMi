@@ -147,7 +147,7 @@ public final class MockConfig {
         return String.join(System.lineSeparator(),
             "Usage: java -jar dbsdk-mock-server-<version>-jar-with-dependencies.jar [options]",
             "",
-            "Mock server for every external service used by the AI-SDK-Db2-IBMi (dbsdk_v1) toolkit.",
+            "Mock server for every external service used by the AI-SDK-Db2-IBMi (aisqltkt) toolkit.",
             "All services are served from the same listener(s), routed by URL path.",
             "",
             "Listener options:",

@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - CONF_UPDATE_WATSONX Procedure
 -- ============================================================================
 -- Purpose: Update WatsonX AI configuration for a specific user in the
---          DBSDK_V1.CONF table. Modifies region, API version, API key,
+--          AISQLTKT.CONF table. Modifies region, API version, API key,
 --          and project ID settings.
 --
 -- Compilation:
@@ -24,7 +24,7 @@
 --   IN p_apikey VARCHAR(100) - API key
 --   IN p_projectid VARCHAR(100) - Project ID
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_WATSONX(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_WATSONX(
     IN p_usrprf VARCHAR(10),
     IN p_region VARCHAR(16),
     IN p_apiversion VARCHAR(10),
@@ -38,7 +38,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET watsonx_region = p_region,
         watsonx_apiVersion = p_apiversion,
         watsonx_apikey = p_apikey,

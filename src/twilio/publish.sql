@@ -16,7 +16,7 @@
 -- 
 -- **Return value:**
 -- - Response message from API call
-create or replace function dbsdk_v1.twilio_sendsms(to_cell_number varchar(100) ccsid 1208 default NULL, msg varchar(110) ccsid 1208 default NULL, twilio_number varchar(100) ccsid 1208 default NULL)
+create or replace function aisqltkt.twilio_sendsms(to_cell_number varchar(100) ccsid 1208 default NULL, msg varchar(110) ccsid 1208 default NULL, twilio_number varchar(100) ccsid 1208 default NULL)
   RETURNS varchar(32000) ccsid 1208
   modifies sql data
   not deterministic
@@ -35,13 +35,13 @@ begin
   set http_options = json_object(
     'headers': json_object(
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Basic ' concat systools.base64encode(dbsdk_v1.twilio_getsid() concat ':' concat dbsdk_v1.twilio_getauthtoken())
+      'Authorization': 'Basic ' concat systools.base64encode(aisqltkt.twilio_getsid() concat ':' concat aisqltkt.twilio_getauthtoken())
     )
   );
   
-  set fullUrl = dbsdk_v1.twilio_getbaseurl() concat '/2010-04-01/Accounts/' concat dbsdk_v1.twilio_getsid() concat '/Messages.json';
+  set fullUrl = aisqltkt.twilio_getbaseurl() concat '/2010-04-01/Accounts/' concat aisqltkt.twilio_getsid() concat '/Messages.json';
   set payload = 'To=' concat qsys2.url_encode(to_cell_number) concat
-          '&From=' concat qsys2.url_encode(dbsdk_v1.twilio_getnumber(twilio_number)) concat '&Body=' concat
+          '&From=' concat qsys2.url_encode(aisqltkt.twilio_getnumber(twilio_number)) concat '&Body=' concat
           qsys2.url_encode(msg);
           
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER

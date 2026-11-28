@@ -13,6 +13,7 @@ export default defineConfig({
 			],
 			sidebar: [
 				{ label: 'Home', link: '/' },
+				{ label: 'Migrating from dbsdk_v1', link: '/migrating-to-aisqltkt/' },
 				{
 					label: 'IBM watsonx',
 					items: [{ autogenerate: { directory: 'watsonx' } }],

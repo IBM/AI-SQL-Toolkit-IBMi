@@ -34,7 +34,7 @@ final class PaseTest extends ToolkitTest {
      */
     private List<String> pase(final String _command) throws SQLException {
         final List<String> lines = new ArrayList<String>();
-        for (final Map<String, String> row : db().queryRows("select output from table(dbsdk_v1.pase_call(" + STR + ")) x", _command)) {
+        for (final Map<String, String> row : db().queryRows("select output from table(aisqltkt.pase_call(" + STR + ")) x", _command)) {
             lines.add(row.get("OUTPUT"));
         }
         return lines;

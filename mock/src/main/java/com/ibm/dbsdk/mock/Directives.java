@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /**
  * In-band "directives" that let a caller steer the mock from inside SQL, where custom HTTP headers cannot be set. A directive is embedded in the prompt or message text, e.g.
- * {@code values dbsdk_v1.ollama_generate('hi [[mock:status=500]]')}.
+ * {@code values aisqltkt.ollama_generate('hi [[mock:status=500]]')}.
  *
  * <ul>
  * <li>{@code [[mock:status=NNN]]} respond with HTTP status NNN and a service-shaped error body</li>

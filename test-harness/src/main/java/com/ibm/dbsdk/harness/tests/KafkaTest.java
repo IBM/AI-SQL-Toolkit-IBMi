@@ -41,10 +41,10 @@ final class KafkaTest extends ToolkitTest {
     @Test
     @DisplayName("getters prefer an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
-        assertEquals("explicit-broker", value("dbsdk_v1.kafka_getbroker(" + STR + ")", "explicit-broker"));
-        assertEquals("9092", value("dbsdk_v1.kafka_getport(" + INT + ")", Integer.valueOf(9092)));
-        assertEquals("explicit-topic", value("dbsdk_v1.kafka_gettopic(" + STR + ")", "explicit-topic"));
-        assertEquals("https", value("dbsdk_v1.kafka_getprotocol(" + STR + ")", "https"));
+        assertEquals("explicit-broker", value("aisqltkt.kafka_getbroker(" + STR + ")", "explicit-broker"));
+        assertEquals("9092", value("aisqltkt.kafka_getport(" + INT + ")", Integer.valueOf(9092)));
+        assertEquals("explicit-topic", value("aisqltkt.kafka_gettopic(" + STR + ")", "explicit-topic"));
+        assertEquals("https", value("aisqltkt.kafka_getprotocol(" + STR + ")", "https"));
     }
 
     @Test
@@ -56,10 +56,10 @@ final class KafkaTest extends ToolkitTest {
     @Test
     @DisplayName("*forjob settings are returned by the getters")
     void jobSettingsAreReturnedByGetters() throws SQLException {
-        assertEquals(mockHost(), value("dbsdk_v1.kafka_getbroker()"));
-        assertEquals(String.valueOf(mockPort()), value("dbsdk_v1.kafka_getport()"));
-        assertEquals(m_jobTopic, value("dbsdk_v1.kafka_gettopic()"));
-        assertEquals("http", value("dbsdk_v1.kafka_getprotocol()"));
+        assertEquals(mockHost(), value("aisqltkt.kafka_getbroker()"));
+        assertEquals(String.valueOf(mockPort()), value("aisqltkt.kafka_getport()"));
+        assertEquals(m_jobTopic, value("aisqltkt.kafka_gettopic()"));
+        assertEquals("http", value("aisqltkt.kafka_getprotocol()"));
     }
 
     /**
@@ -78,7 +78,7 @@ final class KafkaTest extends ToolkitTest {
     }
 
     private String publish(final String _message, final String _key) throws SQLException {
-        return value("dbsdk_v1.kafka_publish(msgdata => " + STR + ", key => " + STR + ")", _message, _key);
+        return value("aisqltkt.kafka_publish(msgdata => " + STR + ", key => " + STR + ")", _message, _key);
     }
 
     /**
@@ -123,7 +123,7 @@ final class KafkaTest extends ToolkitTest {
     @DisplayName("publish uses the topic argument when given")
     void publishToExplicitTopic() throws Exception {
         final String topic = unique("harness-audit");
-        assertNull(value("dbsdk_v1.kafka_publish(" + STR + ", " + STR + ", " + STR + ")", "user logged in", topic, "u1"));
+        assertNull(value("aisqltkt.kafka_publish(" + STR + ", " + STR + ", " + STR + ")", "user logged in", topic, "u1"));
         assertEquals("user logged in", lastStoredRecord(topic).path("value").asText());
     }
 
@@ -137,7 +137,7 @@ final class KafkaTest extends ToolkitTest {
     @DisplayName("publish without a key stores a record with a null key")
     void publishWithoutKey() throws Exception {
         final String topic = unique("harness-nokey");
-        assertNull(value("dbsdk_v1.kafka_publish(msgdata => " + STR + ", topic => " + STR + ")", "no key here", topic));
+        assertNull(value("aisqltkt.kafka_publish(msgdata => " + STR + ", topic => " + STR + ")", "no key here", topic));
         final JsonNode record = lastStoredRecord(topic);
         assertTrue(record.path("key").isNull() || record.path("key").isMissingNode(), "key should be null: " + record);
     }

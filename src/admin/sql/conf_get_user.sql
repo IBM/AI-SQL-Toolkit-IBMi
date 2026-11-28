@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - CONF_GET_USER Procedure
 -- ============================================================================
 -- Purpose: Retrieve complete configuration for a specific user from the
---          DBSDK_V1.CONF table. Returns all configuration fields for the
+--          AISQLTKT.CONF table. Returns all configuration fields for the
 --          specified user profile.
 --
 -- Compilation:
@@ -21,7 +21,7 @@
 --   IN p_usrprf VARCHAR(10) - User profile to retrieve
 -- Returns: Result set with all configuration fields
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_GET_USER(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_GET_USER(
     IN p_usrprf VARCHAR(10)
 )
 LANGUAGE SQL
@@ -57,7 +57,7 @@ BEGIN
             twilio_number,
             twilio_sid,
             twilio_authtoken
-        FROM DBSDK_V1.CONF
+        FROM AISQLTKT.CONF
         WHERE USRPRF = p_usrprf;
     
     OPEN USER_CFG_CSR;

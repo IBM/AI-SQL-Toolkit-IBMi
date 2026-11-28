@@ -5,7 +5,7 @@
 
 -- #### **Function:** `watsonx_generate`
 
--- **Description:** calls a large language model in [dbsdk_v1.ai](http://dbsdk_v1.ai) to generate a response based on the input message.
+-- **Description:** calls a large language model in [watsonx.ai](https://www.ibm.com/products/watsonx-ai) to generate a response based on the input message.
 
 -- **Input parameters:**
 -- - `TEXT` (required): The prompt text for the LLM.
@@ -17,7 +17,7 @@
 -- 
 -- **Return value:**
 -- - The generated text
-create or replace function dbsdk_v1.wx_generate(
+create or replace function aisqltkt.wx_generate(
   text varchar(1000) ccsid 1208,
   model_id varchar(128) ccsid 1208 default 'meta-llama/llama-2-13b-chat',
   parameters varchar(1000) ccsid 1208 default null
@@ -35,25 +35,25 @@ begin
   declare response_code int default 0;
   declare needsNewToken char(1) default 'Y';
 
-  set needsNewToken = dbsdk_v1.wx_ShouldGetNewToken();
+  set needsNewToken = aisqltkt.wx_ShouldGetNewToken();
   if (needsNewToken = 'Y') then
     signal sqlstate '38001' set message_text = 'Please authenticate first.';
     return '*ERROR';
   end if;
 
   if parameters is null then
-    set parameters = dbsdk_v1.parameters(max_new_tokens => 100, time_limit => 1000);
+    set parameters = aisqltkt.parameters(max_new_tokens => 100, time_limit => 1000);
   end if;
 
   -- todo: support this url:
-  -- dbsdk_v1.geturl('/' concat id_or_name concat '/text/generation'),
+  -- aisqltkt.geturl('/' concat id_or_name concat '/text/generation'),
 
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER
   into response_message, response_header
   from table(HTTP_POST_VERBOSE(
-    dbsdk_v1.geturl('/text/generation'),
-    json_object('model_id': model_id, 'input': text, 'parameters': parameters format json, 'project_id': dbsdk_v1.wx_projectid),
-    json_object('headers': json_object('Authorization': 'Bearer ' concat dbsdk_v1.wx_JobBearerToken, 'Content-Type': 'application/json', 'Accept': 'application/json'))
+    aisqltkt.geturl('/text/generation'),
+    json_object('model_id': model_id, 'input': text, 'parameters': parameters format json, 'project_id': aisqltkt.wx_projectid),
+    json_object('headers': json_object('Authorization': 'Bearer ' concat aisqltkt.wx_JobBearerToken, 'Content-Type': 'application/json', 'Accept': 'application/json'))
   )) x;
   
   set response_code = json_value(response_header, '$.HTTP_STATUS_CODE');

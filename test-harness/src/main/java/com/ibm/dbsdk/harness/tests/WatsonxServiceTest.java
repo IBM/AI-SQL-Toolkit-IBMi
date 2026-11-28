@@ -38,15 +38,15 @@ final class WatsonxServiceTest extends ToolkitTest {
     void configureJob() throws SQLException {
         call("wx_SetIamBaseUrlForJob(" + STR + ")", mockBaseUrl());
         call("wx_SetMlBaseUrlForJob(" + STR + ")", mockBaseUrl());
-        db().execute("set dbsdk_v1.wx_region = 'us-south'");
-        db().execute("set dbsdk_v1.wx_apiVersion = '2023-07-07'");
+        db().execute("set aisqltkt.wx_region = 'us-south'");
+        db().execute("set aisqltkt.wx_apiVersion = '2023-07-07'");
         call("wx_SetApiKeyForJob(" + STR + ")", API_KEY);
         call("wx_SetProjectIdForJob(" + STR + ")", "harness-project");
         call("wx_logoutJob()");
     }
 
     private String authenticate() throws SQLException {
-        return value("dbsdk_v1.wx_authenticate()");
+        return value("aisqltkt.wx_authenticate()");
     }
 
     /**
@@ -60,7 +60,7 @@ final class WatsonxServiceTest extends ToolkitTest {
     void authenticateSucceeds() throws Exception {
         call("wx_logoutJob()");
         assertEquals("Y", authenticate());
-        assertEquals("N", value("dbsdk_v1.wx_ShouldGetNewToken()"));
+        assertEquals("N", value("aisqltkt.wx_ShouldGetNewToken()"));
         final Map<String, String> form = MockClient.formFields(lastRequest("watsonx"));
         assertEquals("urn:ibm:params:oauth:grant-type:apikey", form.get("grant_type"));
     }
@@ -85,8 +85,8 @@ final class WatsonxServiceTest extends ToolkitTest {
                 result = "error: " + _e.getMessage();
             }
             assertFalse("Y".equals(result), "authentication with an invalid key returned Y");
-            assertEquals("Y", value("dbsdk_v1.wx_ShouldGetNewToken()"), "a failed authentication must not store a token");
-            assertSqlState("38001", () -> value("dbsdk_v1.wx_generate(" + STR + ")", "Hello world"));
+            assertEquals("Y", value("aisqltkt.wx_ShouldGetNewToken()"), "a failed authentication must not store a token");
+            assertSqlState("38001", () -> value("aisqltkt.wx_generate(" + STR + ")", "Hello world"));
         } finally {
             call("wx_SetApiKeyForJob(" + STR + ")", API_KEY);
             call("wx_logoutJob()");
@@ -103,7 +103,7 @@ final class WatsonxServiceTest extends ToolkitTest {
     @DisplayName("generate returns results[0].generated_text")
     void generateReturnsGeneratedText() throws Exception {
         assertEquals("Y", authenticate());
-        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("dbsdk_v1.wx_generate(" + STR + ")", "Hello world"));
+        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("aisqltkt.wx_generate(" + STR + ")", "Hello world"));
         final JsonNode request = lastRequest("watsonx");
         assertEquals("/ml/v1/text/generation", request.path("path").asText());
         assertTrue(request.path("uri").asText().contains("version=2023-07-07"), request.path("uri").asText());
@@ -123,7 +123,7 @@ final class WatsonxServiceTest extends ToolkitTest {
     @DisplayName("generate uses the model_id and parameters arguments")
     void generateUsesModelAndParameters() throws Exception {
         assertEquals("Y", authenticate());
-        final String reply = value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ", parameters => dbsdk_v1.parameters(max_new_tokens => 3))", "Hi there", "ibm/granite-3-8b-instruct");
+        final String reply = value("aisqltkt.wx_generate(" + STR + ", model_id => " + STR + ", parameters => aisqltkt.parameters(max_new_tokens => 3))", "Hi there", "ibm/granite-3-8b-instruct");
         assertEquals("Mock watsonx response", reply);
         assertEquals("ibm/granite-3-8b-instruct", lastRequestJson("watsonx").path("model_id").asText());
     }
@@ -138,7 +138,7 @@ final class WatsonxServiceTest extends ToolkitTest {
     @DisplayName("generate accepts the default model as an explicit model_id")
     void generateWithExplicitDefaultModel() throws Exception {
         assertEquals("Y", authenticate());
-        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ")", "Hello world", DEFAULT_MODEL));
+        assertEquals("Mock watsonx response from " + DEFAULT_MODEL + ": Hello world", value("aisqltkt.wx_generate(" + STR + ", model_id => " + STR + ")", "Hello world", DEFAULT_MODEL));
         assertEquals(DEFAULT_MODEL, lastRequestJson("watsonx").path("model_id").asText());
     }
 
@@ -153,11 +153,11 @@ final class WatsonxServiceTest extends ToolkitTest {
     @DisplayName("generate works without setting wx_apiVersion [known issue #49]")
     void generateWorksWithDefaultApiVersion() throws SQLException {
         assertEquals("Y", authenticate());
-        db().execute("set dbsdk_v1.wx_apiVersion = NULL");
+        db().execute("set aisqltkt.wx_apiVersion = NULL");
         try {
-            assertTrue(value("dbsdk_v1.wx_generate(" + STR + ")", "Hello").startsWith("Mock watsonx response"));
+            assertTrue(value("aisqltkt.wx_generate(" + STR + ")", "Hello").startsWith("Mock watsonx response"));
         } finally {
-            db().execute("set dbsdk_v1.wx_apiVersion = '2023-07-07'");
+            db().execute("set aisqltkt.wx_apiVersion = '2023-07-07'");
         }
     }
 
@@ -170,7 +170,7 @@ final class WatsonxServiceTest extends ToolkitTest {
     @Test
     @DisplayName("getmodels returns the model list as a result set")
     void getModelsReturnsResultSet() throws SQLException {
-        final List<Map<String, String>> rows = db().callForRows("call dbsdk_v1.wx_getmodels()");
+        final List<Map<String, String>> rows = db().callForRows("call aisqltkt.wx_getmodels()");
         assertFalse(rows.isEmpty(), "no models returned");
         final Map<String, String> first = rows.get(0);
         for (final String column : new String[] { "MODEL_ID", "LABEL", "PROVIDER", "SHORT_DESCRIPTION" }) {
@@ -187,6 +187,6 @@ final class WatsonxServiceTest extends ToolkitTest {
     @DisplayName("generate with an unknown model signals SQLSTATE 38002")
     void unknownModelSignals38002() throws SQLException {
         assertEquals("Y", authenticate());
-        assertSqlState("38002", () -> value("dbsdk_v1.wx_generate(" + STR + ", model_id => " + STR + ")", "Hi", "nobody/no-such-model"));
+        assertSqlState("38002", () -> value("aisqltkt.wx_generate(" + STR + ", model_id => " + STR + ")", "Hi", "nobody/no-such-model"));
     }
 }

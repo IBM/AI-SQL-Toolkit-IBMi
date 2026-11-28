@@ -15,7 +15,7 @@
 -- 
 -- **Return value:**
 -- - API error, if any was encountered
-create or replace function dbsdk_v1.kafka_publish(msgdata varchar(32000) ccsid 1208 default NULL, topic varchar(1000) ccsid 1208 default NULL, key varchar(1000) ccsid 1208 default NULL)
+create or replace function aisqltkt.kafka_publish(msgdata varchar(32000) ccsid 1208 default NULL, topic varchar(1000) ccsid 1208 default NULL, key varchar(1000) ccsid 1208 default NULL)
   RETURNS varchar(32000) ccsid 1208
   modifies sql data
   not deterministic
@@ -29,7 +29,7 @@ begin
   declare response_code int default 500;
   
   declare http_options varchar(32400) ccsid 1208 default '{"headers":{"Content-Type":"application/vnd.kafka.json.v2+json","Accept":"application/vnd.kafka.v2+json"}}';
-  set fullUrl = dbsdk_v1.kafka_getprotocol() concat '://' concat dbsdk_v1.kafka_getbroker() concat ':' concat dbsdk_v1.kafka_getport() concat '/topics/' concat dbsdk_v1.kafka_gettopic(topic);
+  set fullUrl = aisqltkt.kafka_getprotocol() concat '://' concat aisqltkt.kafka_getbroker() concat ':' concat aisqltkt.kafka_getport() concat '/topics/' concat aisqltkt.kafka_gettopic(topic);
 
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER
   into response_message, response_header

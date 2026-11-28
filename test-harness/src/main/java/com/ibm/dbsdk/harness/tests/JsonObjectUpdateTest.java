@@ -30,7 +30,7 @@ final class JsonObjectUpdateTest extends ToolkitTest {
      *             if the call fails
      */
     private void assertMerge(final String _base, final String _update, final String _expected) throws SQLException {
-        final String merged = clobValue("dbsdk_v1.json_object_update(" + STR + ", " + STR + ")", _base, _update);
+        final String merged = clobValue("aisqltkt.json_object_update(" + STR + ", " + STR + ")", _base, _update);
         assertEquals(json(_expected), json(merged), "merged: " + merged);
     }
 
@@ -68,8 +68,8 @@ final class JsonObjectUpdateTest extends ToolkitTest {
     @DisplayName("accepts JSON_OBJECT values as either argument")
     void jsonObjectArguments() throws SQLException {
         final String expected = "{\"name\": \"John\", \"age\": 30, \"occupation\": \"Dev\"}";
-        assertEquals(json(expected), json(clobValue("dbsdk_v1.json_object_update('{\"name\": \"John\", \"age\": 30}', json_object('occupation': 'Dev'))")));
-        assertEquals(json(expected), json(clobValue("dbsdk_v1.json_object_update(json_object('occupation': 'Dev'), '{\"name\": \"John\", \"age\": 30}')")));
+        assertEquals(json(expected), json(clobValue("aisqltkt.json_object_update('{\"name\": \"John\", \"age\": 30}', json_object('occupation': 'Dev'))")));
+        assertEquals(json(expected), json(clobValue("aisqltkt.json_object_update(json_object('occupation': 'Dev'), '{\"name\": \"John\", \"age\": 30}')")));
     }
 
     @Test
@@ -90,7 +90,7 @@ final class JsonObjectUpdateTest extends ToolkitTest {
         assertMerge("{\"string_true\": \"true\", \"boolean_true\": true}", "{\"boolean_false\": false}", "{\"string_true\": \"true\", \"boolean_true\": true, \"boolean_false\": false}");
         final String merged;
         try {
-            merged = clobValue("dbsdk_v1.json_object_update(json_object('string_true': 'true', 'boolean_true': cast('true' as boolean)), json_object('boolean_false': cast('false' as boolean)))");
+            merged = clobValue("aisqltkt.json_object_update(json_object('string_true': 'true', 'boolean_true': cast('true' as boolean)), json_object('boolean_false': cast('false' as boolean)))");
         } catch (final SQLException _e) {
             assumeTrue(false, "this Db2 for i release has no BOOLEAN type: " + _e.getMessage());
             return;
@@ -169,7 +169,7 @@ final class JsonObjectUpdateTest extends ToolkitTest {
     @Test
     @DisplayName("an update that is not a JSON object is rejected with SQLSTATE 38002, even when the base is empty")
     void rejectsNonObjectUpdate() {
-        final String call = "dbsdk_v1.json_object_update(" + STR + ", " + STR + ")";
+        final String call = "aisqltkt.json_object_update(" + STR + ", " + STR + ")";
         assertSqlState("38002", () -> clobValue(call, "{\"a\": 1}", "[1, 2]"));
         assertSqlState("38002", () -> clobValue(call, "{}", "[1, 2]"));
         assertSqlState("38002", () -> clobValue(call, null, "\"abc\""));

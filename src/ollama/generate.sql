@@ -15,7 +15,7 @@
 -- **Return value:**
 -- - The generated reply.
 
-create or replace function dbsdk_v1.ollama_generate(prompt varchar(1000) ccsid 1208, model_id varchar(1000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.ollama_generate(prompt varchar(1000) ccsid 1208, model_id varchar(1000) ccsid 1208 default NULL) 
   RETURNS clob(2G) ccsid 1208
   modifies sql data
   not deterministic
@@ -30,8 +30,8 @@ begin
   declare payload CLOB(2G) CCSID 1208;
   
   declare http_options varchar(32400) ccsid 1208 default '{"ioTimeout":2000000}';
-  set fullUrl = dbsdk_v1.ollama_getprotocol() concat '://' concat dbsdk_v1.ollama_getserver() concat ':' concat dbsdk_v1.ollama_getport() concat '/api/generate';
-  set payload = '' concat json_object('model': dbsdk_v1.ollama_getmodel(model_id), 'prompt': prompt, 'stream': false);
+  set fullUrl = aisqltkt.ollama_getprotocol() concat '://' concat aisqltkt.ollama_getserver() concat ':' concat aisqltkt.ollama_getport() concat '/api/generate';
+  set payload = '' concat json_object('model': aisqltkt.ollama_getmodel(model_id), 'prompt': prompt, 'stream': false);
   
   select RESPONSE_MESSAGE, RESPONSE_HTTP_HEADER
   into response_message, response_header

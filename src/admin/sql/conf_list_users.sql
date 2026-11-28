@@ -1,7 +1,7 @@
 -- ============================================================================
 -- DBSDK Configuration Administration - CONF_LIST_USERS Procedure
 -- ============================================================================
--- Purpose: List all users in the DBSDK_V1.CONF configuration table.
+-- Purpose: List all users in the AISQLTKT.CONF configuration table.
 --          Returns a result set containing all user profiles that have
 --          configuration entries.
 --
@@ -19,7 +19,7 @@
 -- Purpose: List all users in the configuration table
 -- Returns: Result set with user profiles
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_LIST_USERS()
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_LIST_USERS()
 LANGUAGE SQL
 SPECIFIC CONF_LIST_USERS
 NOT DETERMINISTIC
@@ -30,7 +30,7 @@ SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
     DECLARE LIST_USER_CSR CURSOR WITH RETURN FOR
         SELECT USRPRF
-        FROM DBSDK_V1.CONF
+        FROM AISQLTKT.CONF
         ORDER BY USRPRF;
     
     OPEN LIST_USER_CSR;

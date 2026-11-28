@@ -70,7 +70,7 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     @Test
     @DisplayName("api_key argument is sent as a Bearer token")
     void apiKeyArgumentIsSentAsBearerToken() throws Exception {
-        clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ", " + STR + ", " + STR + ")", PROMPT, "{}", "explicit-key");
+        clobValue("aisqltkt.openai_compatible_generate(" + STR + ", " + STR + ", " + STR + ")", PROMPT, "{}", "explicit-key");
         // The mock masks credentials in its recordings, so only the scheme is visible
         assertEquals("Bearer ****", MockClient.header(lastRequest("openai"), "Authorization"));
     }
@@ -84,7 +84,7 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     @Test
     @DisplayName("base_url argument overrides the job's endpoint settings")
     void baseUrlArgumentOverridesJobSettings() throws Exception {
-        final String reply = clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ", " + STR + ", " + STR + ", " + STR + ")", PROMPT, "{}", null, mockBaseUrl() + "/v1beta/openai");
+        final String reply = clobValue("aisqltkt.openai_compatible_generate(" + STR + ", " + STR + ", " + STR + ", " + STR + ")", PROMPT, "{}", null, mockBaseUrl() + "/v1beta/openai");
         assertEquals(expectedReply(PROMPT), reply);
         assertEquals("/v1beta/openai/completions", lastRequest("openai").path("path").asText());
     }
@@ -142,11 +142,11 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     }
 
     private String generate(final String _prompt, final String _options) throws SQLException {
-        return clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ", " + STR + ")", _prompt, _options);
+        return clobValue("aisqltkt.openai_compatible_generate(" + STR + ", " + STR + ")", _prompt, _options);
     }
 
     private String generateJson(final String _prompt, final String _options) throws SQLException {
-        return clobValue("dbsdk_v1.openai_compatible_generate_json(" + STR + ", " + STR + ")", _prompt, _options);
+        return clobValue("aisqltkt.openai_compatible_generate_json(" + STR + ", " + STR + ")", _prompt, _options);
     }
 
     /**
@@ -290,9 +290,9 @@ final class OpenAiCompletionsTest extends ToolkitTest {
     @DisplayName("a prompt alone uses the default options")
     void promptOnlyUsesDefaults() throws Exception {
         final String prompt = "Tell me a story about a dragon.";
-        assertEquals(expectedReply(prompt), clobValue("dbsdk_v1.openai_compatible_generate(" + STR + ")", prompt));
+        assertEquals(expectedReply(prompt), clobValue("aisqltkt.openai_compatible_generate(" + STR + ")", prompt));
         assertNumber(256, lastRequestJson("openai"), "max_tokens");
-        assertEquals(expectedReply(prompt), json(clobValue("dbsdk_v1.openai_compatible_generate_json(" + STR + ")", prompt)).at("/choices/0/text").asText());
+        assertEquals(expectedReply(prompt), json(clobValue("aisqltkt.openai_compatible_generate_json(" + STR + ")", prompt)).at("/choices/0/text").asText());
     }
 
     /**

@@ -5,7 +5,7 @@
 // Purpose: Twilio configuration screen for editing user settings
 //
 // Compilation:
-//   CRTBNDRPG PGM(DBSDK_V1/CFGTWILIO) +
+//   CRTBNDRPG PGM(AISQLTKT/CFGTWILIO) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGTWILIO.rpgle') +
 //             DFTACTGRP(*NO) +
 //             ACTGRP(*NEW) +
@@ -69,7 +69,7 @@ Dow Not Exit;
     Exec SQL
       SELECT USRPRF
       INTO :UsrPrf
-      FROM DBSDK_V1.CONF
+      FROM AISQLTKT.CONF
       WHERE USRPRF = :UsrPrf;
     
     If SQLCODE <> 0;
@@ -112,7 +112,7 @@ Dcl-Proc LoadConfiguration;
     INTO :FullNumber,
          :FullSid,
          :FullAuthToken
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrf;
   
   If SQLCODE = 0;
@@ -167,7 +167,7 @@ Dcl-Proc SaveConfiguration;
   
   // Call SQL procedure to update configuration
   Exec SQL
-    CALL DBSDK_V1.CONF_UPDATE_TWILIO(
+    CALL AISQLTKT.CONF_UPDATE_TWILIO(
       :UsrPrf,
       :FullNumber,
       :FullSid,

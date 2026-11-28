@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 /**
- * The persistent per-user configuration in {@code DBSDK_V1.CONF}: user registration, every {@code *forme} setter, precedence over job settings, multi-user row isolation, and the
+ * The persistent per-user configuration in {@code AISQLTKT.CONF}: user registration, every {@code *forme} setter, precedence over job settings, multi-user row isolation, and the
  * {@code CONF_*} admin procedures.
  *
  * These tests write to the running user's CONF row. The row is saved before the first test and restored (or deleted, if it did not exist) after the last one. Skip them with
@@ -88,9 +88,9 @@ final class ConfTest extends ToolkitTest {
      */
     @AfterAll
     void restoreConfRow() throws SQLException {
-        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
+        db().execute("delete from aisqltkt.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
         if (null == m_savedRow) {
-            db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, m_user);
+            db().execute("delete from aisqltkt.conf where usrprf = " + USRPRF_MARKER, m_user);
             return;
         }
         call("conf_register_user()");
@@ -100,7 +100,7 @@ final class ConfTest extends ToolkitTest {
             }
             final boolean isInteger = m_integerColumns.contains(column.getKey());
             final Object value = null == column.getValue() ? null : isInteger ? Integer.valueOf(column.getValue().trim()) : column.getValue();
-            db().execute("update dbsdk_v1.conf set " + column.getKey() + " = " + (isInteger ? INT : STR) + " where usrprf = " + USRPRF_MARKER, value, m_user);
+            db().execute("update aisqltkt.conf set " + column.getKey() + " = " + (isInteger ? INT : STR) + " where usrprf = " + USRPRF_MARKER, value, m_user);
         }
     }
 
@@ -113,14 +113,14 @@ final class ConfTest extends ToolkitTest {
     @BeforeAll
     void saveConfRow() throws SQLException {
         m_user = value("current_user").trim();
-        for (final Map<String, String> column : db().queryRows("select column_name, data_type from qsys2.syscolumns where table_schema = 'DBSDK_V1' and table_name = 'CONF'")) {
+        for (final Map<String, String> column : db().queryRows("select column_name, data_type from qsys2.syscolumns where table_schema = 'AISQLTKT' and table_name = 'CONF'")) {
             if (column.get("DATA_TYPE").trim().toUpperCase(Locale.ROOT).contains("INT")) {
                 m_integerColumns.add(column.get("COLUMN_NAME").trim());
             }
         }
         final List<Map<String, String>> rows = confRows(m_user);
         m_savedRow = rows.isEmpty() ? null : rows.get(0);
-        db().execute("delete from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
+        db().execute("delete from aisqltkt.conf where usrprf = " + USRPRF_MARKER, OTHER_USER);
     }
 
     /**
@@ -157,7 +157,7 @@ final class ConfTest extends ToolkitTest {
      *             if the catalog query fails
      */
     private void assumeAdminInstalled() throws SQLException {
-        final String count = value("(select count(*) from qsys2.sysroutines where routine_schema = 'DBSDK_V1' and routine_name = 'CONF_GET_USER')");
+        final String count = value("(select count(*) from qsys2.sysroutines where routine_schema = 'AISQLTKT' and routine_name = 'CONF_GET_USER')");
         assumeTrue(Integer.parseInt(count.trim()) > 0, "admin procedures from src/admin/sql are not installed");
     }
 
@@ -172,7 +172,7 @@ final class ConfTest extends ToolkitTest {
     void confGetUserReturnsRow() throws SQLException {
         assumeAdminInstalled();
         call("conf_register_user()");
-        final List<Map<String, String>> rows = db().callForRows("call dbsdk_v1.conf_get_user(" + USRPRF_MARKER + ")", m_user);
+        final List<Map<String, String>> rows = db().callForRows("call aisqltkt.conf_get_user(" + USRPRF_MARKER + ")", m_user);
         assertEquals(1, rows.size(), rows.toString());
         assertEquals(m_user, rows.get(0).get("USRPRF").trim());
     }
@@ -189,14 +189,14 @@ final class ConfTest extends ToolkitTest {
         assumeAdminInstalled();
         call("conf_register_user()");
         boolean found = false;
-        for (final Map<String, String> row : db().callForRows("call dbsdk_v1.conf_list_users()")) {
+        for (final Map<String, String> row : db().callForRows("call aisqltkt.conf_list_users()")) {
             found = found || m_user.equals(row.get("USRPRF").trim());
         }
         assertTrue(found, m_user + " not listed");
     }
 
     private List<Map<String, String>> confRows(final String _user) throws SQLException {
-        return db().queryRows("select * from dbsdk_v1.conf where usrprf = " + USRPRF_MARKER, _user);
+        return db().queryRows("select * from aisqltkt.conf where usrprf = " + USRPRF_MARKER, _user);
     }
 
     @Test
@@ -218,9 +218,9 @@ final class ConfTest extends ToolkitTest {
     void jobSettingOverridesConfValue() throws SQLException {
         call("ollama_setserverforme(" + STR + ")", "conf-value");
         call("ollama_setserverforjob(" + STR + ")", "job-value");
-        assertEquals("job-value", value("dbsdk_v1.ollama_getserver()"));
+        assertEquals("job-value", value("aisqltkt.ollama_getserver()"));
         call("ollama_setserverforjob(" + STR + ")", (Object) null);
-        assertEquals("conf-value", value("dbsdk_v1.ollama_getserver()"));
+        assertEquals("conf-value", value("aisqltkt.ollama_getserver()"));
     }
 
     /**
@@ -239,7 +239,7 @@ final class ConfTest extends ToolkitTest {
                 final String stored = confRows(m_user).get(0).get(setting.m_column.toUpperCase(Locale.ROOT));
                 assertEquals(String.valueOf(setting.m_value), null == stored ? null : stored.trim(), "CONF column " + setting.m_column);
                 call(setting.m_setter.replace("forme", "forjob").replace("ForMe", "ForJob") + "(" + (isInteger ? INT : STR) + ")", (Object) null);
-                assertEquals(String.valueOf(setting.m_value), value("dbsdk_v1." + setting.m_getter + "()"), setting.m_getter + "() with no job setting");
+                assertEquals(String.valueOf(setting.m_value), value("aisqltkt." + setting.m_getter + "()"), setting.m_getter + "() with no job setting");
             }));
         }
         return tests;
@@ -316,7 +316,7 @@ final class ConfTest extends ToolkitTest {
             assertEquals("caller-server", confRows(m_user).get(0).get("OLLAMA_SERVER").trim());
             return;
         }
-        db().execute("update dbsdk_v1.conf set ollama_server = 'other-user-server' where usrprf = " + USRPRF_MARKER, OTHER_USER);
+        db().execute("update aisqltkt.conf set ollama_server = 'other-user-server' where usrprf = " + USRPRF_MARKER, OTHER_USER);
         call("ollama_setserverforme(" + STR + ")", "caller-server");
         assertEquals("caller-server", confRows(m_user).get(0).get("OLLAMA_SERVER").trim());
         assertEquals("other-user-server", confRows(OTHER_USER).get(0).get("OLLAMA_SERVER").trim());
