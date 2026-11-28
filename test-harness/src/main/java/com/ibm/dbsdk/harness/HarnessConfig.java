@@ -170,7 +170,7 @@ public final class HarnessConfig {
         return String.join(System.lineSeparator(),
             "Usage: java -jar dbsdk-test-harness-<version>-jar-with-dependencies.jar [options]",
             "",
-            "Runs the dbsdk_v1 SQL toolkit test suite over the Mapepire JDBC driver. External services",
+            "Runs the aisqltkt SQL toolkit test suite over the Mapepire JDBC driver. External services",
             "are provided by the dbsdk mock server (see ../mock), which the IBM i must be able to reach.",
             "",
             "Connection options:",

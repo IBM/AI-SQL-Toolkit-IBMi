@@ -2,7 +2,7 @@
 --
 -- #### **Function:** `watsonx_getmodels`
 --
--- **Description:** Calls [dbsdk_v1.ai](http://dbsdk_v1.ai) to list available model ids for use with this API. 
+-- **Description:** Calls [watsonx.ai](https://www.ibm.com/products/watsonx-ai) to list available model ids for use with this API. 
 -- 
 -- <Aside type="note">No authentication is needed for this function. </Aside>
 
@@ -21,7 +21,7 @@
 -- **Return value:**
 -- - The list of available models
 
-create or replace procedure dbsdk_v1.wx_getmodels()
+create or replace procedure aisqltkt.wx_getmodels()
   DYNAMIC RESULT SETS 1
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
@@ -30,7 +30,7 @@ begin
 
   DECLARE ResultSet CURSOR FOR
     select * from JSON_TABLE(QSYS2.HTTP_GET(
-      dbsdk_v1.geturl('/foundation_model_specs')
+      aisqltkt.geturl('/foundation_model_specs')
     ), '$.resources[*]'
         COLUMNS(
           model_id VARCHAR(128) PATH '$.model_id',

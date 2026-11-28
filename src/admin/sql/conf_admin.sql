@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - SQL Procedures
 -- ============================================================================
 -- Purpose: Administrative SQL procedures for managing user configurations
---          in the DBSDK_V1.CONF table. These procedures provide a clean
+--          in the AISQLTKT.CONF table. These procedures provide a clean
 --          interface for RPGLE programs to interact with the configuration
 --          database.
 --
@@ -22,7 +22,7 @@
 --   IN p_usrprf VARCHAR(10) - User profile to retrieve
 -- Returns: Result set with all configuration fields
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_GET_USER(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_GET_USER(
     IN p_usrprf VARCHAR(10)
 )
 LANGUAGE SQL
@@ -58,7 +58,7 @@ BEGIN
             twilio_number,
             twilio_sid,
             twilio_authtoken
-        FROM DBSDK_V1.CONF
+        FROM AISQLTKT.CONF
         WHERE USRPRF = p_usrprf;
     
     OPEN USER_CFG_CSR;
@@ -69,7 +69,7 @@ END;
 -- Purpose: List all users in the configuration table
 -- Returns: Result set with user profiles
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_LIST_USERS()
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_LIST_USERS()
 LANGUAGE SQL
 SPECIFIC CONF_LIST_USERS
 NOT DETERMINISTIC
@@ -80,7 +80,7 @@ SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
     DECLARE LIST_USER_CSR CURSOR WITH RETURN FOR
         SELECT USRPRF
-        FROM DBSDK_V1.CONF
+        FROM AISQLTKT.CONF
         ORDER BY USRPRF;
     
     OPEN LIST_USER_CSR;
@@ -96,7 +96,7 @@ END;
 --   IN p_apikey VARCHAR(100) - API key
 --   IN p_projectid VARCHAR(100) - Project ID
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_WATSONX(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_WATSONX(
     IN p_usrprf VARCHAR(10),
     IN p_region VARCHAR(16),
     IN p_apiversion VARCHAR(10),
@@ -110,7 +110,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET watsonx_region = p_region,
         watsonx_apiVersion = p_apiversion,
         watsonx_apikey = p_apikey,
@@ -128,7 +128,7 @@ END;
 --   IN p_port INT - Port number
 --   IN p_model VARCHAR(1000) - Model name
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_OLLAMA(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_OLLAMA(
     IN p_usrprf VARCHAR(10),
     IN p_protocol VARCHAR(16),
     IN p_server VARCHAR(1000),
@@ -142,7 +142,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET ollama_protocol = p_protocol,
         ollama_server = p_server,
         ollama_port = p_port,
@@ -162,7 +162,7 @@ END;
 --   IN p_apikey VARCHAR(8000) - API key
 --   IN p_basepath VARCHAR(1000) - Base path
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_OPENAI(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_OPENAI(
     IN p_usrprf VARCHAR(10),
     IN p_protocol VARCHAR(16),
     IN p_server VARCHAR(1000),
@@ -178,7 +178,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET openai_compatible_protocol = p_protocol,
         openai_compatible_server = p_server,
         openai_compatible_port = p_port,
@@ -198,7 +198,7 @@ END;
 --   IN p_port INT - Port number
 --   IN p_topic VARCHAR(1000) - Topic name
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_KAFKA(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_KAFKA(
     IN p_usrprf VARCHAR(10),
     IN p_protocol VARCHAR(16),
     IN p_broker VARCHAR(1000),
@@ -212,7 +212,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET kafka_protocol = p_protocol,
         kafka_broker = p_broker,
         kafka_port = p_port,
@@ -227,7 +227,7 @@ END;
 --   IN p_usrprf VARCHAR(10) - User profile
 --   IN p_webhook VARCHAR(1000) - Webhook URL
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_SLACK(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_SLACK(
     IN p_usrprf VARCHAR(10),
     IN p_webhook VARCHAR(1000)
 )
@@ -238,7 +238,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET slack_webhook = p_webhook
     WHERE USRPRF = p_usrprf;
 END;
@@ -252,7 +252,7 @@ END;
 --   IN p_sid VARCHAR(1000) - Account SID
 --   IN p_authtoken VARCHAR(1000) - Auth token
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_TWILIO(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_TWILIO(
     IN p_usrprf VARCHAR(10),
     IN p_number VARCHAR(1000),
     IN p_sid VARCHAR(1000),
@@ -265,7 +265,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET twilio_number = p_number,
         twilio_sid = p_sid,
         twilio_authtoken = p_authtoken

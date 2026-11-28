@@ -1,6 +1,6 @@
 # dbsdk mock server
 
-A self-contained mock of every external service the `dbsdk_v1` SQL toolkit talks to, so you can
+A self-contained mock of every external service the `aisqltkt` SQL toolkit talks to, so you can
 test the toolkit without cloud accounts, API keys, or any LLM, Kafka, Slack or Twilio
 infrastructure.
 
@@ -102,8 +102,8 @@ Directives are read from the prompt (LLMs), the record value or key (Kafka), the
 (Slack), the `Body` (Twilio) and the API key (watsonx IAM).
 
 ```sql
-values dbsdk_v1.ollama_generate('hi [[mock:status=500]]');        -- SQLSTATE 38002
-values dbsdk_v1.openai_compatible_generate('[[mock:reply={"ok":true}]]');
+values aisqltkt.ollama_generate('hi [[mock:status=500]]');        -- SQLSTATE 38002
+values aisqltkt.openai_compatible_generate('[[mock:reply={"ok":true}]]');
 ```
 
 ## Inspecting traffic
@@ -127,14 +127,14 @@ By default the watsonx functions and `twilio_sendsms` call the real services:
 Point them at the mock by setting their base URLs, either for the job or for your user profile:
 
 ```sql
-call dbsdk_v1.wx_SetIamBaseUrlForJob('http://MOCKHOST:8888');   -- wx_authenticate
-call dbsdk_v1.wx_SetMlBaseUrlForJob('http://MOCKHOST:8888');    -- wx_generate, wx_getmodels
-call dbsdk_v1.twilio_setbaseurlforjob('http://MOCKHOST:8888');  -- twilio_sendsms
+call aisqltkt.wx_SetIamBaseUrlForJob('http://MOCKHOST:8888');   -- wx_authenticate
+call aisqltkt.wx_SetMlBaseUrlForJob('http://MOCKHOST:8888');    -- wx_generate, wx_getmodels
+call aisqltkt.twilio_setbaseurlforjob('http://MOCKHOST:8888');  -- twilio_sendsms
 
--- or, persisted in DBSDK_V1.CONF:
-call dbsdk_v1.wx_SetIamBaseUrlForMe('http://MOCKHOST:8888');
-call dbsdk_v1.wx_SetMlBaseUrlForMe('http://MOCKHOST:8888');
-call dbsdk_v1.twilio_setbaseurlforme('http://MOCKHOST:8888');
+-- or, persisted in AISQLTKT.CONF:
+call aisqltkt.wx_SetIamBaseUrlForMe('http://MOCKHOST:8888');
+call aisqltkt.wx_SetMlBaseUrlForMe('http://MOCKHOST:8888');
+call aisqltkt.twilio_setbaseurlforme('http://MOCKHOST:8888');
 ```
 
 Setting a job value to NULL falls back to the user profile value, and clearing that restores the
@@ -158,9 +158,9 @@ redirect the hosts instead:
    ```
    Remove the entry with `QSYS/RMVTCPHTE` when you are done.
 
-`wx_generate` needs a `version` query parameter, just like the real API. `dbsdk_v1.GetUrl` only
-adds it when the `dbsdk_v1.wx_apiVersion` global variable is set, so run
-`set dbsdk_v1.wx_apiVersion = '2023-07-07';` first. The variable defaults to NULL.
+`wx_generate` needs a `version` query parameter, just like the real API. `aisqltkt.GetUrl` only
+adds it when the `aisqltkt.wx_apiVersion` global variable is set, so run
+`set aisqltkt.wx_apiVersion = '2023-07-07';` first. The variable defaults to NULL.
 
 ## Exercising the whole toolkit
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a 5250 green-screen application for administering the DBSDK_V1 configuration system. It provides a menu-driven interface for managing user configurations across multiple AI and integration services including WatsonX, Ollama, OpenAI Compatible, Kafka, Slack, and Twilio.
+This is a 5250 green-screen application for administering the AISQLTKT configuration system. It provides a menu-driven interface for managing user configurations across multiple AI and integration services including WatsonX, Ollama, OpenAI Compatible, Kafka, Slack, and Twilio.
 
 ### Note on historical files
 
@@ -26,27 +26,27 @@ Parts of this document may reference specific paths that were used in developmen
 - **Administrator-Only Access**: Secure access with *OWNER authority to bypass RCAC
 - **Menu-Driven Interface**: Easy navigation through intuitive 5250 screens
 - **Field Validation**: Input validation and error handling
-- **Database Integration**: Direct updates to DBSDK_V1.CONF table
+- **Database Integration**: Direct updates to AISQLTKT.CONF table
 
 ## Prerequisites
 
 ### System Requirements
 
 - IBM i operating system (V7R3 or later recommended)
-- DBSDK_V1 library must exist
-- DBSDK_V1.CONF table must be created (run `src/conf.sql` first)
-- Authority to create objects in DBSDK_V1 library
+- AISQLTKT library must exist
+- AISQLTKT.CONF table must be created (run `src/conf.sql` first)
+- Authority to create objects in AISQLTKT library
 
 ### User Requirements
 
-- A user profile named `DBSDK_V1` must exist on the system.
+- A user profile named `AISQLTKT` must exist on the system.
 - The administrator running this application must either:
-  - Run the application directly as the `DBSDK_V1` user
-  - Have the ability to adopt the program owner's authority (if the programs are owned by `DBSDK_V1`)
-- This specific user profile (`DBSDK_V1`) is required by the Row and Column Access Control (RCAC) rules to bypass row-level security and manage configurations for all users.
+  - Run the application directly as the `AISQLTKT` user
+  - Have the ability to adopt the program owner's authority (if the programs are owned by `AISQLTKT`)
+- This specific user profile (`AISQLTKT`) is required by the Row and Column Access Control (RCAC) rules to bypass row-level security and manage configurations for all users.
 - Administrator must have:
-  - Authority to DBSDK_V1 library
-  - Authority to read/write DBSDK_V1.CONF table
+  - Authority to AISQLTKT library
+  - Authority to read/write AISQLTKT.CONF table
   - QIBM_DB_SECADM function usage.
   - Note that RCAC won't work at all if LPP option 47 (IBM Advanced Data Security for i) is not installed.
 
@@ -112,7 +112,7 @@ CRTSRCPF FILE(YOURLIB/QDDSSRC) RCDLEN(112)
 3. **Start the application:**
 
    ```cl
-   CALL PGM(DBSDK_V1/CFGMENU)
+   CALL PGM(AISQLTKT/CFGMENU)
    ```
 
 ### Build Options
@@ -196,46 +196,46 @@ Compile each display file (with GENLVL(30) to allow warnings):
 CPYFRMSTMF FROMSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/dspf/CFGMENUD.dspf') +
            TOMBR('/QSYS.LIB/JWOEHR.LIB/QDDSSRC.FILE/CFGMENUD.MBR') +
            MBROPT(*REPLACE)
-CRTDSPF FILE(DBSDK_V1/CFGMENUD) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(CFGMENUD) GENLVL(30)
+CRTDSPF FILE(AISQLTKT/CFGMENUD) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(CFGMENUD) GENLVL(30)
 
 # User Management
 CPYFRMSTMF FROMSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/dspf/CFGUSERD.dspf') +
            TOMBR('/QSYS.LIB/JWOEHR.LIB/QDDSSRC.FILE/CFGUSERD.MBR') +
            MBROPT(*REPLACE)
-CRTDSPF FILE(DBSDK_V1/CFGUSERD) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(CFGUSERD) GENLVL(30)
+CRTDSPF FILE(AISQLTKT/CFGUSERD) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(CFGUSERD) GENLVL(30)
 
 # Repeat for all other display files...
 ```
 
 #### Step 3: Compile RPGLE Programs
 
-**Important:** RPGLE programs contain embedded SQL and must be compiled with CRTSQLRPGI. The library list must include DBSDK_V1 to find display files.
+**Important:** RPGLE programs contain embedded SQL and must be compiled with CRTSQLRPGI. The library list must include AISQLTKT to find display files.
 
 ```bash
-# Add DBSDK_V1 to library list
-ADDLIBLE DBSDK_V1
+# Add AISQLTKT to library list
+ADDLIBLE AISQLTKT
 
 # Main Menu
-CRTSQLRPGI OBJ(DBSDK_V1/CFGMENU) +
+CRTSQLRPGI OBJ(AISQLTKT/CFGMENU) +
            SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGMENU.rpgle') +
            COMMIT(*NONE) +
            DBGVIEW(*SOURCE) +
            COMPILEOPT('DFTACTGRP(*NO) ACTGRP(*NEW) TGTCCSID(*JOB)') +
            USRPRF(*OWNER) +
            RDB(*LOCAL) +
-           DFTRDBCOL(DBSDK_V1) +
+           DFTRDBCOL(AISQLTKT) +
            CVTCCSID(*JOB) +
            SQLPATH(*LIBL)
 
 # User Management
-CRTSQLRPGI OBJ(DBSDK_V1/CFGUSER) +
+CRTSQLRPGI OBJ(AISQLTKT/CFGUSER) +
            SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGUSER.rpgle') +
            COMMIT(*NONE) +
            DBGVIEW(*SOURCE) +
            COMPILEOPT('DFTACTGRP(*NO) ACTGRP(*NEW) TGTCCSID(*JOB)') +
            USRPRF(*OWNER) +
            RDB(*LOCAL) +
-           DFTRDBCOL(DBSDK_V1) +
+           DFTRDBCOL(AISQLTKT) +
            CVTCCSID(*JOB) +
            SQLPATH(*LIBL)
 
@@ -246,7 +246,7 @@ CRTSQLRPGI OBJ(DBSDK_V1/CFGUSER) +
 - `CRTSQLRPGI` is required for programs with embedded SQL
 - `CVTCCSID(*JOB)` handles UTF-8 (1208) source files
 - `SQLPATH(*LIBL)` uses library list to find SQL procedures
-- `DFTRDBCOL(DBSDK_V1)` sets default collection for unqualified SQL names
+- `DFTRDBCOL(AISQLTKT)` sets default collection for unqualified SQL names
 - `USRPRF(*OWNER)` allows programs to bypass RCAC for administration
 
 ## Usage
@@ -256,13 +256,13 @@ CRTSQLRPGI OBJ(DBSDK_V1/CFGUSER) +
 From a 5250 session:
 
 ```cl
-CALL PGM(DBSDK_V1/CFGMENU)
+CALL PGM(AISQLTKT/CFGMENU)
 ```
 
 Or add to your library list and call directly:
 
 ```cl
-ADDLIBLE DBSDK_V1
+ADDLIBLE AISQLTKT
 CALL CFGMENU
 ```
 
@@ -387,13 +387,13 @@ Consider implementing an audit trail to track:
 
 **Problem**: "Object CFGMENU not found"
 
-- **Solution**: Ensure all programs are compiled to DBSDK_V1 library
-- **Check**: `SELECT * FROM QSYS2.PROGRAM_INFO WHERE PROGRAM_LIBRARY = 'DBSDK_V1' AND PROGRAM_NAME = 'CFGMENU';`
+- **Solution**: Ensure all programs are compiled to AISQLTKT library
+- **Check**: `SELECT * FROM QSYS2.PROGRAM_INFO WHERE PROGRAM_LIBRARY = 'AISQLTKT' AND PROGRAM_NAME = 'CFGMENU';`
 
 **Problem**: "Authority violation"
 
 - **Solution**: Verify programs have `USRPRF(*OWNER)` attribute
-- **Check**: `SELECT USER_PROFILE FROM QSYS2.PROGRAM_INFO WHERE PROGRAM_LIBRARY = 'DBSDK_V1' AND PROGRAM_NAME = 'CFGMENU';`
+- **Check**: `SELECT USER_PROFILE FROM QSYS2.PROGRAM_INFO WHERE PROGRAM_LIBRARY = 'AISQLTKT' AND PROGRAM_NAME = 'CFGMENU';`
 
 **Problem**: "SQL error when saving"
 
@@ -403,13 +403,13 @@ Consider implementing an audit trail to track:
 **Problem**: "Display file not found"
 
 - **Solution**: Ensure all display files are compiled
-- **Check**: `WRKOBJ OBJ(DBSDK_V1/CFGMENUD) OBJTYPE(*FILE)`
+- **Check**: `WRKOBJ OBJ(AISQLTKT/CFGMENUD) OBJTYPE(*FILE)`
 
 ### Debug Mode
 
 To debug programs:
 
-1. Start debug session: `STRDBG PGM(DBSDK_V1/CFGMENU)`
+1. Start debug session: `STRDBG PGM(AISQLTKT/CFGMENU)`
 2. Set breakpoints as needed
 3. Run the program: `CALL CFGMENU`
 4. Step through code with F10/F22

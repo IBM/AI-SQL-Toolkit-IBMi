@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - CONF_UPDATE_OPENAI Procedure
 -- ============================================================================
 -- Purpose: Update OpenAI Compatible API configuration for a specific user in
---          the DBSDK_V1.CONF table. Modifies protocol, server address, port,
+--          the AISQLTKT.CONF table. Modifies protocol, server address, port,
 --          model, API key, and base path settings.
 --
 -- Compilation:
@@ -26,7 +26,7 @@
 --   IN p_apikey VARCHAR(8000) - API key
 --   IN p_basepath VARCHAR(1000) - Base path
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_OPENAI(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_OPENAI(
     IN p_usrprf VARCHAR(10),
     IN p_protocol VARCHAR(16),
     IN p_server VARCHAR(1000),
@@ -42,7 +42,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET openai_compatible_protocol = p_protocol,
         openai_compatible_server = p_server,
         openai_compatible_port = p_port,

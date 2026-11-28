@@ -12,7 +12,7 @@
   <name>AI-SDK-Db2-IBMi Mock Server</name>
   <description>
     A self-contained mock HTTP(S) server that emulates every external service called by the
-    AI-SDK-Db2-IBMi (dbsdk_v1) SQL toolkit: watsonx.ai, Ollama, OpenAI-compatible endpoints,
+    AI-SDK-Db2-IBMi (aisqltkt) SQL toolkit: watsonx.ai, Ollama, OpenAI-compatible endpoints,
     Kafka REST Proxy, Slack incoming webhooks and Twilio.
   </description>
 

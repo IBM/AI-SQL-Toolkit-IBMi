@@ -40,17 +40,17 @@ final class SlackTest extends ToolkitTest {
     @Test
     @DisplayName("getwebhook prefers an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
-        assertEquals("https://example.invalid/hook", value("dbsdk_v1.slack_getwebhook(" + STR + ")", "https://example.invalid/hook"));
+        assertEquals("https://example.invalid/hook", value("aisqltkt.slack_getwebhook(" + STR + ")", "https://example.invalid/hook"));
     }
 
     @Test
     @DisplayName("*forjob webhook is returned by the getter")
     void jobSettingIsReturnedByGetter() throws SQLException {
-        assertEquals(m_webhook, value("dbsdk_v1.slack_getwebhook()"));
+        assertEquals(m_webhook, value("aisqltkt.slack_getwebhook()"));
     }
 
     private String send(final String _message) throws SQLException {
-        return value("dbsdk_v1.slack_sendmessage(" + STR + ")", _message);
+        return value("aisqltkt.slack_sendmessage(" + STR + ")", _message);
     }
 
     /**
@@ -78,7 +78,7 @@ final class SlackTest extends ToolkitTest {
     @DisplayName("sendmessage uses the webhook argument when given")
     void sendToExplicitWebhook() throws Exception {
         final String other = mockBaseUrl() + "/services/T111OTHER/B111OTHER/other-webhook";
-        assertEquals("ok", value("dbsdk_v1.slack_sendmessage(" + STR + ", " + STR + ")", "to the other hook", other));
+        assertEquals("ok", value("aisqltkt.slack_sendmessage(" + STR + ", " + STR + ")", "to the other hook", other));
         assertTrue(lastRequest("slack").path("path").asText().startsWith("/services/T111OTHER/B111OTHER/"));
     }
 }

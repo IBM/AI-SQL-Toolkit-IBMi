@@ -17,7 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * End-to-end tests. Each request mirrors what the corresponding dbsdk_v1 SQL function sends.
+ * End-to-end tests. Each request mirrors what the corresponding aisqltkt SQL function sends.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MockServerTest {

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Starts the dbsdk mock server, runs the test harness against the installed dbsdk_v1 toolkit, then
+# Starts the dbsdk mock server, runs the test harness against the installed aisqltkt toolkit, then
 # stops the mock. Exits with the harness's status: 0 all tests passed, 1 a test failed, 2 a usage
 # or environment error. Used by "make test"; can also be run as "sh test-harness/run-tests.sh"
 # from the repository root (use "sh" explicitly: on IBM i PASE, #!/bin/sh resolves to QShell).

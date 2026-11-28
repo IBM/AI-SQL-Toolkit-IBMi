@@ -39,12 +39,12 @@ final class OpenAiConfigTest extends ToolkitTest {
     @Test
     @DisplayName("getters prefer an explicit argument over the job setting")
     void explicitArgumentOverridesJobSetting() throws SQLException {
-        assertEquals("http", value("dbsdk_v1.openai_compatible_getprotocol(" + STR + ")", "http"));
-        assertEquals("explicit-server", value("dbsdk_v1.openai_compatible_getserver(" + STR + ")", "explicit-server"));
-        assertEquals("1111", value("dbsdk_v1.openai_compatible_getport(" + INT + ")", Integer.valueOf(1111)));
-        assertEquals("/explicit", value("dbsdk_v1.openai_compatible_getbasepath(" + STR + ")", "/explicit"));
-        assertEquals("explicit-model", value("dbsdk_v1.openai_compatible_getmodel(" + STR + ")", "explicit-model"));
-        assertEquals("explicit-key", value("dbsdk_v1.openai_compatible_getapikey(" + STR + ")", "explicit-key"));
+        assertEquals("http", value("aisqltkt.openai_compatible_getprotocol(" + STR + ")", "http"));
+        assertEquals("explicit-server", value("aisqltkt.openai_compatible_getserver(" + STR + ")", "explicit-server"));
+        assertEquals("1111", value("aisqltkt.openai_compatible_getport(" + INT + ")", Integer.valueOf(1111)));
+        assertEquals("/explicit", value("aisqltkt.openai_compatible_getbasepath(" + STR + ")", "/explicit"));
+        assertEquals("explicit-model", value("aisqltkt.openai_compatible_getmodel(" + STR + ")", "explicit-model"));
+        assertEquals("explicit-key", value("aisqltkt.openai_compatible_getapikey(" + STR + ")", "explicit-key"));
     }
 
     /**
@@ -56,11 +56,11 @@ final class OpenAiConfigTest extends ToolkitTest {
     @Test
     @DisplayName("*forjob settings are returned by the getters")
     void jobSettingsAreReturnedByGetters() throws SQLException {
-        assertEquals("https", value("dbsdk_v1.openai_compatible_getprotocol()"));
-        assertEquals("job-server", value("dbsdk_v1.openai_compatible_getserver()"));
-        assertEquals("9443", value("dbsdk_v1.openai_compatible_getport()"));
-        assertEquals("/job/v1", value("dbsdk_v1.openai_compatible_getbasepath()"));
-        assertEquals("job-model", value("dbsdk_v1.openai_compatible_getmodel()"));
-        assertEquals("job-api-key", value("dbsdk_v1.openai_compatible_getapikey()"));
+        assertEquals("https", value("aisqltkt.openai_compatible_getprotocol()"));
+        assertEquals("job-server", value("aisqltkt.openai_compatible_getserver()"));
+        assertEquals("9443", value("aisqltkt.openai_compatible_getport()"));
+        assertEquals("/job/v1", value("aisqltkt.openai_compatible_getbasepath()"));
+        assertEquals("job-model", value("aisqltkt.openai_compatible_getmodel()"));
+        assertEquals("job-api-key", value("aisqltkt.openai_compatible_getapikey()"));
     }
 }

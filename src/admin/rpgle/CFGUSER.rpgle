@@ -6,7 +6,7 @@
 //          Simple list display (no subfile)
 //
 // Compilation:
-//   CRTSQLRPGI PGM(DBSDK_V1/CFGUSER) +
+//   CRTSQLRPGI PGM(AISQLTKT/CFGUSER) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGUSER.rpgle') +
 //             COMMIT(*NONE) +
 //             DBGVIEW(*SOURCE) +
@@ -84,7 +84,7 @@ Dcl-Proc AddUser;
   EndIf;
   
   Exec SQL
-    CALL DBSDK_V1.CONF_REGISTER_USER(:UsrPrfI);
+    CALL AISQLTKT.CONF_REGISTER_USER(:UsrPrfI);
   
   If SQLCODE = 0;
     StsMsg = 'User added successfully';
@@ -117,7 +117,7 @@ Dcl-Proc DeleteUser;
   EndIf;
   
   Exec SQL
-    CALL DBSDK_V1.CONF_REMOVE_USER(:UsrPrfI);
+    CALL AISQLTKT.CONF_REMOVE_USER(:UsrPrfI);
   
   If SQLCODE = 0;
     StsMsg = 'User deleted successfully';
@@ -143,7 +143,7 @@ Dcl-Proc DisplayUser;
   
   Exec SQL
     SELECT USRPRF INTO :FoundUser
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrfI;
   
   If SQLCODE = 0;
@@ -180,7 +180,7 @@ Dcl-Proc ListUsers;
   
   Exec SQL
     DECLARE C2 CURSOR FOR
-      SELECT USRPRF FROM DBSDK_V1.CONF ORDER BY USRPRF;
+      SELECT USRPRF FROM AISQLTKT.CONF ORDER BY USRPRF;
   
   Exec SQL OPEN C2;
   

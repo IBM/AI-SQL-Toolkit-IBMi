@@ -11,7 +11,7 @@
 
   <name>AI-SDK-Db2-IBMi Test Harness</name>
   <description>
-    End-to-end test suite for the AI-SDK-Db2-IBMi (dbsdk_v1) SQL toolkit. Calls the SQL functions
+    End-to-end test suite for the AI-SDK-Db2-IBMi (aisqltkt) SQL toolkit. Calls the SQL functions
     over the Mapepire JDBC driver and checks the results, using the dbsdk mock server as the
     external service endpoint.
   </description>

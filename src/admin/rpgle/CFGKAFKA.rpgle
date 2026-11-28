@@ -5,7 +5,7 @@
 // Purpose: Kafka configuration screen for editing user settings
 //
 // Compilation:
-//   CRTBNDRPG PGM(DBSDK_V1/CFGKAFKA) +
+//   CRTBNDRPG PGM(AISQLTKT/CFGKAFKA) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGKAFKA.rpgle') +
 //             DFTACTGRP(*NO) +
 //             ACTGRP(*NEW) +
@@ -68,7 +68,7 @@ Dow Not Exit;
     Exec SQL
       SELECT USRPRF
       INTO :UsrPrf
-      FROM DBSDK_V1.CONF
+      FROM AISQLTKT.CONF
       WHERE USRPRF = :UsrPrf;
     
     If SQLCODE <> 0;
@@ -113,7 +113,7 @@ Dcl-Proc LoadConfiguration;
          :FullBroker,
          :KfPort,
          :FullTopic
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrf;
   
   If SQLCODE = 0;
@@ -155,7 +155,7 @@ Dcl-Proc SaveConfiguration;
   
   // Call SQL procedure to update configuration
   Exec SQL
-    CALL DBSDK_V1.CONF_UPDATE_KAFKA(
+    CALL AISQLTKT.CONF_UPDATE_KAFKA(
       :UsrPrf,
       :KfProtoc,
       :FullBroker,

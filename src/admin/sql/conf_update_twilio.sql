@@ -2,7 +2,7 @@
 -- DBSDK Configuration Administration - CONF_UPDATE_TWILIO Procedure
 -- ============================================================================
 -- Purpose: Update Twilio SMS configuration for a specific user in the
---          DBSDK_V1.CONF table. Modifies phone number, account SID,
+--          AISQLTKT.CONF table. Modifies phone number, account SID,
 --          and authentication token settings.
 --
 -- Compilation:
@@ -23,7 +23,7 @@
 --   IN p_sid VARCHAR(1000) - Account SID
 --   IN p_authtoken VARCHAR(1000) - Auth token
 -- ============================================================================
-CREATE OR REPLACE PROCEDURE DBSDK_V1.CONF_UPDATE_TWILIO(
+CREATE OR REPLACE PROCEDURE AISQLTKT.CONF_UPDATE_TWILIO(
     IN p_usrprf VARCHAR(10),
     IN p_number VARCHAR(1000),
     IN p_sid VARCHAR(1000),
@@ -36,7 +36,7 @@ MODIFIES SQL DATA
 CALLED ON NULL INPUT
 SET OPTION USRPRF = *OWNER, DYNUSRPRF = *OWNER, COMMIT = *NONE
 BEGIN
-    UPDATE DBSDK_V1.CONF
+    UPDATE AISQLTKT.CONF
     SET twilio_number = p_number,
         twilio_sid = p_sid,
         twilio_authtoken = p_authtoken

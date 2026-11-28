@@ -13,31 +13,31 @@ Before using the OpenAI-compatible functionality, you need to configure the conn
 
 ```sql
 -- Set server information for current job
-CALL dbsdk_v1.openai_compatible_setserverforjob('127.0.0.1');
-CALL dbsdk_v1.openai_compatible_setportforjob(8080);
-CALL dbsdk_v1.openai_compatible_setprotocolforjob('http');
+CALL aisqltkt.openai_compatible_setserverforjob('127.0.0.1');
+CALL aisqltkt.openai_compatible_setportforjob(8080);
+CALL aisqltkt.openai_compatible_setprotocolforjob('http');
 
 -- Optional: Set the model to use
-CALL dbsdk_v1.openai_compatible_setmodelforjob('gpt-3.5-turbo');
+CALL aisqltkt.openai_compatible_setmodelforjob('gpt-3.5-turbo');
 
 -- Optional: Set API key if your server requires authentication
 -- Many local deployments don't require authentication
-CALL dbsdk_v1.openai_compatible_setapikeyforjob('your-api-key');
+CALL aisqltkt.openai_compatible_setapikeyforjob('your-api-key');
 
 -- Optional: Set a custom base path if your provider uses a non-standard path
 -- By default, the standard OpenAI path '/v1' is used
-CALL dbsdk_v1.openai_compatible_setbasepathforjob('/v1');
+CALL aisqltkt.openai_compatible_setbasepathforjob('/v1');
 ```
 
 To make these settings persistent across jobs for your user profile:
 
 ```sql
-CALL dbsdk_v1.openai_compatible_setserverforme('127.0.0.1');
-CALL dbsdk_v1.openai_compatible_setportforme(8080);
-CALL dbsdk_v1.openai_compatible_setprotocolforme('http');
-CALL dbsdk_v1.openai_compatible_setmodelforme('gpt-3.5-turbo');  -- Optional
-CALL dbsdk_v1.openai_compatible_setapikeyforme('your-api-key');  -- Optional
-CALL dbsdk_v1.openai_compatible_setbasepathforme('/v1');         -- Optional
+CALL aisqltkt.openai_compatible_setserverforme('127.0.0.1');
+CALL aisqltkt.openai_compatible_setportforme(8080);
+CALL aisqltkt.openai_compatible_setprotocolforme('http');
+CALL aisqltkt.openai_compatible_setmodelforme('gpt-3.5-turbo');  -- Optional
+CALL aisqltkt.openai_compatible_setapikeyforme('your-api-key');  -- Optional
+CALL aisqltkt.openai_compatible_setbasepathforme('/v1');         -- Optional
 ```
 
 ## Basic Usage
@@ -47,7 +47,7 @@ CALL dbsdk_v1.openai_compatible_setbasepathforme('/v1');         -- Optional
 To generate text using the OpenAI-compatible API:
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_generate('What is Db2 for i?')
+SELECT aisqltkt.openai_compatible_generate('What is Db2 for i?')
 FROM sysibm.sysdummy1;
 ```
 
@@ -56,7 +56,7 @@ FROM sysibm.sysdummy1;
 it is recommended to specify a value for `max_tokens` depending on your task:
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Why are armadillos so cute?',
   '{"max_tokens": 128}'
 ) FROM sysibm.sysdummy1;
@@ -67,7 +67,7 @@ SELECT dbsdk_v1.openai_compatible_generate(
 You can specify which model to use (overriding the default):
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Explain SQL in 100 words',
   '{"model_id": "gpt-3.5-turbo"}'
 ) FROM sysibm.sysdummy1;
@@ -78,7 +78,7 @@ SELECT dbsdk_v1.openai_compatible_generate(
 The `openai_compatible_generate` function supports a wide range of optional parameters through a JSON options object:
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Tell me a story about a dragon',
   '{
     "model_id": "llama3",
@@ -133,7 +133,7 @@ Here are some key parameters explained:
 For structured data, you can use the JSON-specific function:
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_generate_json(
+SELECT aisqltkt.openai_compatible_generate_json(
   'Generate a JSON with 3 names and ages of fictional people',
   '{
     "model_id": "llama3",
@@ -167,21 +167,21 @@ for the current job or persistently for your user profile:
 
 ```sql
 -- For the current job only
-CALL dbsdk_v1.openai_compatible_setserverforjob('generativelanguage.googleapis.com');
-CALL dbsdk_v1.openai_compatible_setportforjob(443);
-CALL dbsdk_v1.openai_compatible_setprotocolforjob('https');
-CALL dbsdk_v1.openai_compatible_setbasepathforjob('/v1beta/openai');
-CALL dbsdk_v1.openai_compatible_setapikeyforjob('your-gemini-api-key');
-CALL dbsdk_v1.openai_compatible_setmodelforjob('gemini-3.6-flash');
+CALL aisqltkt.openai_compatible_setserverforjob('generativelanguage.googleapis.com');
+CALL aisqltkt.openai_compatible_setportforjob(443);
+CALL aisqltkt.openai_compatible_setprotocolforjob('https');
+CALL aisqltkt.openai_compatible_setbasepathforjob('/v1beta/openai');
+CALL aisqltkt.openai_compatible_setapikeyforjob('your-gemini-api-key');
+CALL aisqltkt.openai_compatible_setmodelforjob('gemini-3.6-flash');
 ```
 
-If you manage connection settings through the `DBSDK_V1.CONF` data file, set the
+If you manage connection settings through the `AISQLTKT.CONF` data file, set the
 `OPENAI_COMPATIBLE_BASEPATH` key to `/v1beta/openai`.
 
 ### `openai_compatible_chat_generate`
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_chat_generate(
+SELECT aisqltkt.openai_compatible_chat_generate(
   'What is Db2 for i?'
 ) FROM sysibm.sysdummy1;
 ```

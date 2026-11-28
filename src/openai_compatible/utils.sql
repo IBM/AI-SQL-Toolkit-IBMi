@@ -1,16 +1,16 @@
 -- ## OpenAI-compatible endpoints utility functions
 
-create or replace function dbsdk_v1.openai_compatible_getserver(hostname varchar(1000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.openai_compatible_getserver(hostname varchar(1000) ccsid 1208 default NULL) 
   returns varchar(1000) ccsid 1208
   modifies sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = hostname;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_server;
+  set returnval = aisqltkt.openai_compatible_server;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_server from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_server from aisqltkt.conf where USRPRF = CURRENT_USER);
   return returnval;
 end;
 
@@ -20,10 +20,10 @@ end;
 
 -- **Input parameters:**
 -- - `HOSTNAME` (required): The IP address or hostname of the OpenAI-compatible server.
-create or replace procedure dbsdk_v1.openai_compatible_setserverforjob(hostname varchar(1000) ccsid 1208 default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setserverforjob(hostname varchar(1000) ccsid 1208 default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_server = hostname;
+  set aisqltkt.openai_compatible_server = hostname;
 end;
 
 -- ### procedure: `openai_compatible_setserverforme`
@@ -32,11 +32,11 @@ end;
 
 -- **Input parameters:**
 -- - `HOSTNAME` (required): The IP address or hostname of the OpenAI-compatible server.
-create or replace procedure dbsdk_v1.openai_compatible_setserverforme(hostname varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.openai_compatible_setserverforme(hostname varchar(1000) ccsid 1208 default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, hostname AS openai_compatible_server
       FROM sysibm.sysdummy1
   ) live
@@ -46,17 +46,17 @@ begin
   WHEN MATCHED THEN UPDATE SET openai_compatible_server = live.openai_compatible_server;
 end;
 
-create or replace function dbsdk_v1.openai_compatible_getport(port INT default NULL) 
+create or replace function aisqltkt.openai_compatible_getport(port INT default NULL) 
   returns INT
   modifies sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = port;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_port;
+  set returnval = aisqltkt.openai_compatible_port;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_port from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_port from aisqltkt.conf where USRPRF = CURRENT_USER);
   return returnval;
 end;
 
@@ -66,10 +66,10 @@ end;
 
 -- **Input parameters:**
 -- - `PORT` (required): The OpenAI-compatible server port.
-create or replace procedure dbsdk_v1.openai_compatible_setportforjob(port INT default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setportforjob(port INT default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_port = port;
+  set aisqltkt.openai_compatible_port = port;
 end;
 
 -- ### procedure: `openai_compatible_setportforme`
@@ -78,11 +78,11 @@ end;
 
 -- **Input parameters:**
 -- - `PORT` (required): The OpenAI-compatible server port.
-create or replace procedure dbsdk_v1.openai_compatible_setportforme(port INT default NULL)
+create or replace procedure aisqltkt.openai_compatible_setportforme(port INT default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, port AS openai_compatible_port
       FROM sysibm.sysdummy1
   ) live
@@ -92,17 +92,17 @@ begin
   WHEN MATCHED THEN UPDATE SET openai_compatible_port = live.openai_compatible_port;
 end;
 
-create or replace function dbsdk_v1.openai_compatible_getmodel(model varchar(1000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.openai_compatible_getmodel(model varchar(1000) ccsid 1208 default NULL) 
   returns varchar(1000) ccsid 1208
   modifies sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = model;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_model;
+  set returnval = aisqltkt.openai_compatible_model;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_model from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_model from aisqltkt.conf where USRPRF = CURRENT_USER);
   return returnval;
 end;
 
@@ -112,10 +112,10 @@ end;
 
 -- **Input parameters:**
 -- - `MODEL` (required): The model identifier to use.
-create or replace procedure dbsdk_v1.openai_compatible_setmodelforjob(model varchar(1000) ccsid 1208 default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setmodelforjob(model varchar(1000) ccsid 1208 default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_model = model;
+  set aisqltkt.openai_compatible_model = model;
 end;
 
 -- ### procedure: `openai_compatible_setmodelforme`
@@ -124,11 +124,11 @@ end;
 
 -- **Input parameters:**
 -- - `MODEL` (required): The model identifier to use.
-create or replace procedure dbsdk_v1.openai_compatible_setmodelforme(model varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.openai_compatible_setmodelforme(model varchar(1000) ccsid 1208 default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, model AS openai_compatible_model
       FROM sysibm.sysdummy1
   ) live
@@ -138,17 +138,17 @@ begin
   WHEN MATCHED THEN UPDATE SET openai_compatible_model = live.openai_compatible_model;
 end;
 
-create or replace function dbsdk_v1.openai_compatible_getprotocol(protocol varchar(1000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.openai_compatible_getprotocol(protocol varchar(1000) ccsid 1208 default NULL) 
   returns varchar(1000) ccsid 1208
   modifies sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = protocol;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_protocol;
+  set returnval = aisqltkt.openai_compatible_protocol;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_protocol from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_protocol from aisqltkt.conf where USRPRF = CURRENT_USER);
   return returnval;
 end;
 
@@ -158,10 +158,10 @@ end;
 
 -- **Input parameters:**
 -- - `PROTOCOL` (required): `http`/`https`
-create or replace procedure dbsdk_v1.openai_compatible_setprotocolforjob(protocol varchar(1000) ccsid 1208 default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setprotocolforjob(protocol varchar(1000) ccsid 1208 default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_protocol = protocol;
+  set aisqltkt.openai_compatible_protocol = protocol;
 end;
 
 -- ### procedure: `openai_compatible_setprotocolforme`
@@ -170,11 +170,11 @@ end;
 -- 
 -- **Input parameters:**
 -- - `PROTOCOL` (required): `http`/`https`
-create or replace procedure dbsdk_v1.openai_compatible_setprotocolforme(protocol varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.openai_compatible_setprotocolforme(protocol varchar(1000) ccsid 1208 default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, protocol AS openai_compatible_protocol
       FROM sysibm.sysdummy1
   ) live
@@ -185,17 +185,17 @@ begin
 end;
 
 -- Function for API key management
-create or replace function dbsdk_v1.openai_compatible_getapikey(api_key varchar(8000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.openai_compatible_getapikey(api_key varchar(8000) ccsid 1208 default NULL) 
   returns varchar(8000) ccsid 1208
   modifies sql data
 begin
   declare returnval varchar(8000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = api_key;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_apikey;
+  set returnval = aisqltkt.openai_compatible_apikey;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_apikey from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_apikey from aisqltkt.conf where USRPRF = CURRENT_USER);
   return returnval;
 end;
 
@@ -205,10 +205,10 @@ end;
 
 -- **Input parameters:**
 -- - `API_KEY` (required): The API key for authentication.
-create or replace procedure dbsdk_v1.openai_compatible_setapikeyforjob(api_key varchar(8000) ccsid 1208 default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setapikeyforjob(api_key varchar(8000) ccsid 1208 default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_apikey = api_key;
+  set aisqltkt.openai_compatible_apikey = api_key;
 end;
 
 -- ### procedure: `openai_compatible_setapikeyforme`
@@ -217,11 +217,11 @@ end;
 -- 
 -- **Input parameters:**
 -- - `API_KEY` (required): The API key for authentication.
-create or replace procedure dbsdk_v1.openai_compatible_setapikeyforme(api_key varchar(8000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.openai_compatible_setapikeyforme(api_key varchar(8000) ccsid 1208 default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, api_key AS openai_compatible_apikey
       FROM sysibm.sysdummy1
   ) live
@@ -232,17 +232,17 @@ begin
 end;
 
 -- Function for base path configuration (for servers with non-standard API paths)
-create or replace function dbsdk_v1.openai_compatible_getbasepath(base_path varchar(1000) ccsid 1208 default NULL) 
+create or replace function aisqltkt.openai_compatible_getbasepath(base_path varchar(1000) ccsid 1208 default NULL) 
   returns varchar(1000) ccsid 1208
   modifies sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
-  call dbsdk_v1.conf_initialize();
+  call aisqltkt.conf_initialize();
   set returnval = base_path;
   if (returnval is not null) then return returnval;end if;
-  set returnval = dbsdk_v1.openai_compatible_basepath;
+  set returnval = aisqltkt.openai_compatible_basepath;
   if (returnval is not null) then return returnval;end if;
-  set returnval = (select openai_compatible_basepath from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+  set returnval = (select openai_compatible_basepath from aisqltkt.conf where USRPRF = CURRENT_USER);
   return coalesce(returnval, '/v1'); -- Default to standard OpenAI path if not set
 end;
 
@@ -252,10 +252,10 @@ end;
 
 -- **Input parameters:**
 -- - `BASE_PATH` (required): The base path for API endpoints.
-create or replace procedure dbsdk_v1.openai_compatible_setbasepathforjob(base_path varchar(1000) ccsid 1208 default NULL) 
+create or replace procedure aisqltkt.openai_compatible_setbasepathforjob(base_path varchar(1000) ccsid 1208 default NULL) 
   modifies SQL DATA
 begin
-  set dbsdk_v1.openai_compatible_basepath = base_path;
+  set aisqltkt.openai_compatible_basepath = base_path;
 end;
 
 -- ### procedure: `openai_compatible_setbasepathforme`
@@ -264,11 +264,11 @@ end;
 -- 
 -- **Input parameters:**
 -- - `BASE_PATH` (required): The base path for API endpoints.
-create or replace procedure dbsdk_v1.openai_compatible_setbasepathforme(base_path varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.openai_compatible_setbasepathforme(base_path varchar(1000) ccsid 1208 default NULL)
   MODIFIES SQL DATA
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, base_path AS openai_compatible_basepath
       FROM sysibm.sysdummy1
   ) live
@@ -294,7 +294,7 @@ end;
 -- **Return value:**
 -- - A merged JSON object
 
-create or replace function dbsdk_v1.json_object_update(
+create or replace function aisqltkt.json_object_update(
   base_object CLOB(2G) ccsid 1208,
   update_object CLOB(2G) ccsid 1208
 )

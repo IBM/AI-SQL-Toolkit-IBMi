@@ -13,14 +13,14 @@ This page provides practical examples of using OpenAI-compatible endpoints in yo
 
 ```sql
 -- Configure connection for this job
-CALL dbsdk_v1.openai_compatible_setserverforjob('127.0.0.1');
-CALL dbsdk_v1.openai_compatible_setportforjob(8080);
-CALL dbsdk_v1.openai_compatible_setprotocolforjob('http');
-CALL dbsdk_v1.openai_compatible_setapikeyforjob('your-api-key');
-CALL dbsdk_v1.openai_compatible_setmodelforjob('llama3');
+CALL aisqltkt.openai_compatible_setserverforjob('127.0.0.1');
+CALL aisqltkt.openai_compatible_setportforjob(8080);
+CALL aisqltkt.openai_compatible_setprotocolforjob('http');
+CALL aisqltkt.openai_compatible_setapikeyforjob('your-api-key');
+CALL aisqltkt.openai_compatible_setmodelforjob('llama3');
 
 -- Generate text
-SELECT dbsdk_v1.openai_compatible_generate('What is IBM i?') 
+SELECT aisqltkt.openai_compatible_generate('What is IBM i?') 
 FROM sysibm.sysdummy1;
 ```
 
@@ -30,13 +30,13 @@ You can specify different models for different use cases:
 
 ```sql
 -- Use a larger model for complex tasks
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Explain quantum computing in simple terms',
   '{"model_id": "mistral-7b"}'
 ) FROM sysibm.sysdummy1;
 
 -- Use a smaller model for simple tasks
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Write a short greeting',
   '{"model_id": "gpt-4o"}'
 ) FROM sysibm.sysdummy1;
@@ -48,7 +48,7 @@ The openai_compatible_generate function accepts a JSON options object with many 
 
 ```sql
 -- Using temperature and max_tokens to control generation
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Tell me a creative story about a dragon',
   '{
     "temperature": 0.8,
@@ -57,7 +57,7 @@ SELECT dbsdk_v1.openai_compatible_generate(
 ) FROM sysibm.sysdummy1;
 
 -- Using multiple parameters for more control
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'List 5 programming best practices',
   '{
     "model_id": "llama3", 
@@ -69,7 +69,7 @@ SELECT dbsdk_v1.openai_compatible_generate(
 ) FROM sysibm.sysdummy1;
 
 -- Controlling randomness with seed parameter
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Write a haiku about programming',
   '{
     "temperature": 0.7,
@@ -87,7 +87,7 @@ Generate structured JSON data:
 
 ```sql
 -- Create a JSON structure with information about database tables
-SELECT dbsdk_v1.openai_compatible_generate_json(
+SELECT aisqltkt.openai_compatible_generate_json(
   'Create a JSON structure with 3 fictional SQL tables, each with name, purpose, and 3 columns',
   '{
     "model_id": "llama3",
@@ -121,7 +121,7 @@ INSERT INTO employees_temp VALUES
   (7, 'David Kim', 'Engineering', 78000.00);
 
 -- Use LLM to generate SQL from natural language
-VALUES CAST(dbsdk_v1.openai_compatible_generate(
+VALUES CAST(aisqltkt.openai_compatible_generate(
   'Write an SQL query to find the average salary by department for the employees_temp table with columns: id, name, department, salary',
   '{
     "model_id": "llama3",
@@ -157,7 +157,7 @@ WITH
     FROM sales_data
   )
 -- Generate a summary
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   'Analyze the following sales data and provide insights:
 ' || sales_text,
   '{
@@ -188,7 +188,7 @@ INSERT INTO qtemp.feedback VALUES
 SELECT 
   f.id,
   f.comment,
-  dbsdk_v1.openai_compatible_generate_json(
+  aisqltkt.openai_compatible_generate_json(
     'Classify the following customer feedback into one of these categories: Positive, Neutral, Negative. Return just a JSON with a single "category" field.
     
     Feedback: ' || f.comment,
@@ -218,7 +218,7 @@ CREATE TABLE mylib.generated_content (
 -- Generate and store content
 INSERT INTO mylib.generated_content (prompt, content)
 SELECT 'Write a short poem about databases', 
-       dbsdk_v1.openai_compatible_generate(
+       aisqltkt.openai_compatible_generate(
          'Write a short poem about databases',
          '{
            "temperature": 0.7,
@@ -262,7 +262,7 @@ WITH prompt_data AS (
            '{{task}}', 'Find all customers who spent more than $1000 in total'
          ) AS prompt
 )
-SELECT dbsdk_v1.openai_compatible_generate(
+SELECT aisqltkt.openai_compatible_generate(
   prompt,
   '{
     "temperature": 0.3,
@@ -286,19 +286,19 @@ standard `/v1` used by most other providers.
 
 ```sql
 -- Configure connection for Gemini
-CALL dbsdk_v1.openai_compatible_setserverforjob('generativelanguage.googleapis.com');
-CALL dbsdk_v1.openai_compatible_setportforjob(443);
-CALL dbsdk_v1.openai_compatible_setprotocolforjob('https');
-CALL dbsdk_v1.openai_compatible_setbasepathforjob('/v1beta/openai');
-CALL dbsdk_v1.openai_compatible_setapikeyforjob('your-gemini-api-key');
-CALL dbsdk_v1.openai_compatible_setmodelforjob('gemini-3.6-flash');
+CALL aisqltkt.openai_compatible_setserverforjob('generativelanguage.googleapis.com');
+CALL aisqltkt.openai_compatible_setportforjob(443);
+CALL aisqltkt.openai_compatible_setprotocolforjob('https');
+CALL aisqltkt.openai_compatible_setbasepathforjob('/v1beta/openai');
+CALL aisqltkt.openai_compatible_setapikeyforjob('your-gemini-api-key');
+CALL aisqltkt.openai_compatible_setmodelforjob('gemini-3.6-flash');
 ```
 
 ### Simple Prompt
 
 ```sql
 -- Use openai_compatible_chat_generate — NOT openai_compatible_generate — for Gemini
-SELECT dbsdk_v1.openai_compatible_chat_generate(
+SELECT aisqltkt.openai_compatible_chat_generate(
   'What is Db2 for i?'
 ) FROM sysibm.sysdummy1;
 ```
@@ -310,7 +310,7 @@ omitted from the request body entirely, keeping the request compatible with Gemi
 strict field validation.
 
 ```sql
-SELECT dbsdk_v1.openai_compatible_chat_generate(
+SELECT aisqltkt.openai_compatible_chat_generate(
   'Explain the difference between a primary key and a unique constraint in SQL',
   '{
     "model_id": "gemini-3.6-flash",
@@ -335,7 +335,7 @@ CREATE TABLE mylib.gemini_responses (
 INSERT INTO mylib.gemini_responses (prompt, response)
 SELECT
   'List three best practices for IBM i database design',
-  dbsdk_v1.openai_compatible_chat_generate(
+  aisqltkt.openai_compatible_chat_generate(
     'List three best practices for IBM i database design',
     '{"max_tokens": 400, "temperature": 0.5}'
   )

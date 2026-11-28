@@ -1,43 +1,43 @@
 --variables for watsonx
-create or replace variable dbsdk_v1.wx_region              varchar(16) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.wx_apiVersion          varchar(10) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.wx_apikey              varchar(100) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.wx_projectid           varchar(100) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.wx_JobBearerToken      varchar(10000) ccsid 1208 default null;
-create or replace variable dbsdk_v1.wx_JobTokenExpires     timestamp;
-create or replace variable dbsdk_v1.wx_iam_baseurl         varchar(1000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.wx_ml_baseurl          varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_region              varchar(16) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_apiVersion          varchar(10) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_apikey              varchar(100) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_projectid           varchar(100) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_JobBearerToken      varchar(10000) ccsid 1208 default null;
+create or replace variable aisqltkt.wx_JobTokenExpires     timestamp;
+create or replace variable aisqltkt.wx_iam_baseurl         varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.wx_ml_baseurl          varchar(1000) ccsid 1208 default NULL;
 
 -- variables for ollama
-create or replace variable dbsdk_v1.ollama_protocol     varchar(16)   ccsid 1208 default null;
-create or replace variable dbsdk_v1.ollama_server       varchar(1000) ccsid 1208 default null;
-create or replace variable dbsdk_v1.ollama_port         INT                      default NULL;
-create or replace variable dbsdk_v1.ollama_model        varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.ollama_protocol     varchar(16)   ccsid 1208 default null;
+create or replace variable aisqltkt.ollama_server       varchar(1000) ccsid 1208 default null;
+create or replace variable aisqltkt.ollama_port         INT                      default NULL;
+create or replace variable aisqltkt.ollama_model        varchar(1000) ccsid 1208 default NULL;
 
 -- variables for openai compatible
-create or replace variable dbsdk_v1.openai_compatible_protocol     varchar(16)   ccsid 1208 default null;
-create or replace variable dbsdk_v1.openai_compatible_server       varchar(1000) ccsid 1208 default null;
-create or replace variable dbsdk_v1.openai_compatible_port         INT                      default NULL;
-create or replace variable dbsdk_v1.openai_compatible_model        varchar(1000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.openai_compatible_apikey       varchar(8000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.openai_compatible_basepath     varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.openai_compatible_protocol     varchar(16)   ccsid 1208 default null;
+create or replace variable aisqltkt.openai_compatible_server       varchar(1000) ccsid 1208 default null;
+create or replace variable aisqltkt.openai_compatible_port         INT                      default NULL;
+create or replace variable aisqltkt.openai_compatible_model        varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.openai_compatible_apikey       varchar(8000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.openai_compatible_basepath     varchar(1000) ccsid 1208 default NULL;
 
 -- variables for kafka
-create or replace variable dbsdk_v1.kafka_protocol     varchar(16)   ccsid 1208 default null;
-create or replace variable dbsdk_v1.kafka_broker       varchar(1000) ccsid 1208 default null;
-create or replace variable dbsdk_v1.kafka_port         INT                      default NULL;
-create or replace variable dbsdk_v1.kafka_topic        varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.kafka_protocol     varchar(16)   ccsid 1208 default null;
+create or replace variable aisqltkt.kafka_broker       varchar(1000) ccsid 1208 default null;
+create or replace variable aisqltkt.kafka_port         INT                      default NULL;
+create or replace variable aisqltkt.kafka_topic        varchar(1000) ccsid 1208 default NULL;
 
 -- variables for Slack
-create or replace variable dbsdk_v1.slack_webhook      varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.slack_webhook      varchar(1000) ccsid 1208 default NULL;
 
 -- variables for Twilio
-create or replace variable dbsdk_v1.twilio_number      varchar(1000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.twilio_sid         varchar(1000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.twilio_authtoken   varchar(1000) ccsid 1208 default NULL;
-create or replace variable dbsdk_v1.twilio_baseurl     varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.twilio_number      varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.twilio_sid         varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.twilio_authtoken   varchar(1000) ccsid 1208 default NULL;
+create or replace variable aisqltkt.twilio_baseurl     varchar(1000) ccsid 1208 default NULL;
 
-create or replace table dbsdk_v1.conf
+create or replace table aisqltkt.conf
       (
           USRPRF varchar(10),
           watsonx_region varchar(16) ccsid 1208 default 'us-south',
@@ -71,27 +71,27 @@ create or replace table dbsdk_v1.conf
       )
       on replace preserve rows;
 
-create or replace procedure dbsdk_v1.conf_register_user(usrprf varchar(10) ccsid 1208 default CURRENT_USER) 
+create or replace procedure aisqltkt.conf_register_user(usrprf varchar(10) ccsid 1208 default CURRENT_USER) 
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
       SELECT usrprf AS usrprf
         FROM sysibm.sysdummy1
     ) live
     ON tt.usrprf = live.usrprf
     WHEN NOT MATCHED THEN INSERT (usrprf) VALUES (live.usrprf);
 end;
-create or replace procedure dbsdk_v1.conf_initialize(usrprf varchar(10) ccsid 1208 default CURRENT_USER) 
+create or replace procedure aisqltkt.conf_initialize(usrprf varchar(10) ccsid 1208 default CURRENT_USER) 
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  call dbsdk_v1.conf_register_user(usrprf);
+  call aisqltkt.conf_register_user(usrprf);
 end;
-create or replace procedure dbsdk_v1.conf_remove_user(usrprftoremove varchar(10) ccsid 1208 default CURRENT_USER) 
+create or replace procedure aisqltkt.conf_remove_user(usrprftoremove varchar(10) ccsid 1208 default CURRENT_USER) 
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  DELETE FROM dbsdk_v1.conf WHERE usrprf = usrprftoremove; 
+  DELETE FROM aisqltkt.conf WHERE usrprf = usrprftoremove; 
 end;
 

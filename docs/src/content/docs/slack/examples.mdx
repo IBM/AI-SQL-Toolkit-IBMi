@@ -13,16 +13,16 @@ to source control or publish it in documentation.
 
 ### Set a webhook for the current user profile
 ```sql
-call dbsdk_v1.slack_setwebhookforme('<your-slack-webhook-url>');
+call aisqltkt.slack_setwebhookforme('<your-slack-webhook-url>');
 ```
 
 ### Send a Slack message (using the webhook set for the current user profile)
 ```sql
-values(dbsdk_v1.slack_sendmessage('IBM i rules'));
+values(aisqltkt.slack_sendmessage('IBM i rules'));
 ```
 ### Send a Slack message (using a specific webhook)
 ```sql
 values(
-    dbsdk_v1.slack_sendmessage( MSG =>'IBM i rules',
+    aisqltkt.slack_sendmessage( MSG =>'IBM i rules',
                                WEBHOOK => '<your-slack-webhook-url>'));
 ```

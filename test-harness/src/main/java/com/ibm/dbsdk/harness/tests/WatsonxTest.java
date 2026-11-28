@@ -30,7 +30,7 @@ final class WatsonxTest extends ToolkitTest {
      *             if the query fails
      */
     private void assumeNoConfBaseUrls() throws SQLException {
-        final List<Map<String, String>> rows = db().queryRows("select watsonx_iam_baseurl, watsonx_ml_baseurl from dbsdk_v1.conf where usrprf = current_user");
+        final List<Map<String, String>> rows = db().queryRows("select watsonx_iam_baseurl, watsonx_ml_baseurl from aisqltkt.conf where usrprf = current_user");
         assumeTrue(rows.isEmpty() || (null == rows.get(0).get("WATSONX_IAM_BASEURL") && null == rows.get(0).get("WATSONX_ML_BASEURL")),
             "this user's CONF row sets a watsonx base URL, so the defaults cannot be observed");
     }
@@ -47,8 +47,8 @@ final class WatsonxTest extends ToolkitTest {
         call("wx_SetIamBaseUrlForJob(" + STR + ")", "http://job-iam.example:8080");
         call("wx_SetMlBaseUrlForJob(" + STR + ")", "http://job-ml.example:8080");
         try {
-            assertEquals("http://arg-iam.example", value("dbsdk_v1.wx_GetIamBaseUrl(" + STR + ")", "http://arg-iam.example"));
-            assertEquals("http://arg-ml.example", value("dbsdk_v1.wx_GetMlBaseUrl(" + STR + ")", "http://arg-ml.example"));
+            assertEquals("http://arg-iam.example", value("aisqltkt.wx_GetIamBaseUrl(" + STR + ")", "http://arg-iam.example"));
+            assertEquals("http://arg-ml.example", value("aisqltkt.wx_GetMlBaseUrl(" + STR + ")", "http://arg-ml.example"));
         } finally {
             call("wx_SetIamBaseUrlForJob(" + STR + ")", (Object) null);
             call("wx_SetMlBaseUrlForJob(" + STR + ")", (Object) null);
@@ -65,9 +65,9 @@ final class WatsonxTest extends ToolkitTest {
     @DisplayName("base URLs default to IBM Cloud, using the region")
     void baseUrlDefaults() throws SQLException {
         assumeNoConfBaseUrls();
-        db().execute("set dbsdk_v1.wx_region = 'eu-gb'");
-        assertEquals("https://iam.cloud.ibm.com", value("dbsdk_v1.wx_GetIamBaseUrl()"));
-        assertEquals("https://eu-gb.ml.cloud.ibm.com", value("dbsdk_v1.wx_GetMlBaseUrl()"));
+        db().execute("set aisqltkt.wx_region = 'eu-gb'");
+        assertEquals("https://iam.cloud.ibm.com", value("aisqltkt.wx_GetIamBaseUrl()"));
+        assertEquals("https://eu-gb.ml.cloud.ibm.com", value("aisqltkt.wx_GetMlBaseUrl()"));
     }
 
     /**
@@ -82,11 +82,11 @@ final class WatsonxTest extends ToolkitTest {
         call("wx_SetIamBaseUrlForJob(" + STR + ")", "http://job-iam.example:8080/");
         call("wx_SetMlBaseUrlForJob(" + STR + ")", "http://job-ml.example:8080/");
         try {
-            assertEquals("http://job-iam.example:8080", value("dbsdk_v1.wx_GetIamBaseUrl()"));
-            assertEquals("http://job-ml.example:8080", value("dbsdk_v1.wx_GetMlBaseUrl()"));
+            assertEquals("http://job-iam.example:8080", value("aisqltkt.wx_GetIamBaseUrl()"));
+            assertEquals("http://job-ml.example:8080", value("aisqltkt.wx_GetMlBaseUrl()"));
             assumeNoConfBaseUrls();
             call("wx_SetIamBaseUrlForJob(" + STR + ")", "");
-            assertEquals("https://iam.cloud.ibm.com", value("dbsdk_v1.wx_GetIamBaseUrl()"));
+            assertEquals("https://iam.cloud.ibm.com", value("aisqltkt.wx_GetIamBaseUrl()"));
         } finally {
             call("wx_SetIamBaseUrlForJob(" + STR + ")", (Object) null);
             call("wx_SetMlBaseUrlForJob(" + STR + ")", (Object) null);
@@ -97,7 +97,7 @@ final class WatsonxTest extends ToolkitTest {
     @DisplayName("generate without a token signals SQLSTATE 38001")
     void generateWithoutTokenSignals38001() throws SQLException {
         call("wx_logoutJob()");
-        assertSqlState("38001", () -> value("dbsdk_v1.wx_generate(" + STR + ")", "Hello"));
+        assertSqlState("38001", () -> value("aisqltkt.wx_generate(" + STR + ")", "Hello"));
     }
 
     /**
@@ -110,11 +110,11 @@ final class WatsonxTest extends ToolkitTest {
     @DisplayName("GetUrl builds the regional URL with the API version")
     void getUrlIncludesRegionAndVersion() throws SQLException {
         assumeNoConfBaseUrls();
-        db().execute("set dbsdk_v1.wx_region = 'eu-de'");
-        db().execute("set dbsdk_v1.wx_apiVersion = '2023-07-07'");
-        assertEquals("https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
-        db().execute("set dbsdk_v1.wx_region = 'us-south'");
-        assertEquals("https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
+        db().execute("set aisqltkt.wx_region = 'eu-de'");
+        db().execute("set aisqltkt.wx_apiVersion = '2023-07-07'");
+        assertEquals("https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("aisqltkt.geturl(" + STR + ")", "/text/generation"));
+        db().execute("set aisqltkt.wx_region = 'us-south'");
+        assertEquals("https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-07-07", value("aisqltkt.geturl(" + STR + ")", "/text/generation"));
     }
 
     /**
@@ -127,9 +127,9 @@ final class WatsonxTest extends ToolkitTest {
     @Tag(HarnessConfig.TAG_KNOWN_ISSUE)
     @DisplayName("GetUrl includes a version when wx_apiVersion is not set [known issue #49]")
     void getUrlIncludesVersionByDefault() throws SQLException {
-        db().execute("set dbsdk_v1.wx_region = 'us-south'");
-        db().execute("set dbsdk_v1.wx_apiVersion = NULL");
-        final String url = value("dbsdk_v1.geturl(" + STR + ")", "/text/generation");
+        db().execute("set aisqltkt.wx_region = 'us-south'");
+        db().execute("set aisqltkt.wx_apiVersion = NULL");
+        final String url = value("aisqltkt.geturl(" + STR + ")", "/text/generation");
         assertTrue(url.contains("version="), "watsonx requires ?version=, got " + url);
     }
 
@@ -142,10 +142,10 @@ final class WatsonxTest extends ToolkitTest {
     @Test
     @DisplayName("GetUrl uses the configured watsonx.ai base URL")
     void getUrlUsesMlBaseUrl() throws SQLException {
-        db().execute("set dbsdk_v1.wx_apiVersion = '2023-07-07'");
+        db().execute("set aisqltkt.wx_apiVersion = '2023-07-07'");
         call("wx_SetMlBaseUrlForJob(" + STR + ")", "http://mock.example:9000");
         try {
-            assertEquals("http://mock.example:9000/ml/v1/text/generation?version=2023-07-07", value("dbsdk_v1.geturl(" + STR + ")", "/text/generation"));
+            assertEquals("http://mock.example:9000/ml/v1/text/generation?version=2023-07-07", value("aisqltkt.geturl(" + STR + ")", "/text/generation"));
         } finally {
             call("wx_SetMlBaseUrlForJob(" + STR + ")", (Object) null);
         }
@@ -160,7 +160,7 @@ final class WatsonxTest extends ToolkitTest {
     @Test
     @DisplayName("parameters() writes decimal values as valid JSON numbers")
     void parametersDecimalsAreValidJson() throws SQLException {
-        final JsonNode params = json(value("dbsdk_v1.parameters(temperature => 0.5, top_p => 0.9, repetition_penalty => 0.1)"));
+        final JsonNode params = json(value("aisqltkt.parameters(temperature => 0.5, top_p => 0.9, repetition_penalty => 0.1)"));
         assertNumber(0.5, params, "temperature");
         assertNumber(0.9, params, "top_p");
         assertNumber(0.1, params, "repetition_penalty");
@@ -175,7 +175,7 @@ final class WatsonxTest extends ToolkitTest {
     @Test
     @DisplayName("parameters(temperature => 0.5, time_limit => 1000) gives exactly that object")
     void parametersDocumentedExample() throws SQLException {
-        assertEquals(json("{\"temperature\":0.5,\"time_limit\":1000}"), json(value("dbsdk_v1.parameters(temperature => 0.5, time_limit => 1000)")));
+        assertEquals(json("{\"temperature\":0.5,\"time_limit\":1000}"), json(value("aisqltkt.parameters(temperature => 0.5, time_limit => 1000)")));
     }
 
     /**
@@ -187,7 +187,7 @@ final class WatsonxTest extends ToolkitTest {
     @Test
     @DisplayName("parameters() builds JSON from the given arguments")
     void parametersIncludeGivenArguments() throws SQLException {
-        final JsonNode params = json(value("dbsdk_v1.parameters(decoding_method => 'greedy', max_new_tokens => 100, time_limit => 1000, random_seed => 7)"));
+        final JsonNode params = json(value("aisqltkt.parameters(decoding_method => 'greedy', max_new_tokens => 100, time_limit => 1000, random_seed => 7)"));
         assertEquals("greedy", params.path("decoding_method").asText());
         assertNumber(100, params, "max_new_tokens");
         assertNumber(1000, params, "time_limit");
@@ -198,7 +198,7 @@ final class WatsonxTest extends ToolkitTest {
     @Test
     @DisplayName("parameters() with no arguments is an empty object")
     void parametersOmitNulls() throws SQLException {
-        assertEquals(0, json(value("dbsdk_v1.parameters()")).size());
+        assertEquals(0, json(value("aisqltkt.parameters()")).size());
     }
 
     /**
@@ -212,8 +212,8 @@ final class WatsonxTest extends ToolkitTest {
     void setApiKeyAndProjectId() throws SQLException {
         call("wx_SetApiKeyForJob(" + STR + ")", "harness-api-key");
         call("wx_SetProjectIdForJob(" + STR + ")", "harness-project");
-        assertEquals("harness-api-key", value("dbsdk_v1.wx_apikey"));
-        assertEquals("harness-project", value("dbsdk_v1.wx_projectid"));
+        assertEquals("harness-api-key", value("aisqltkt.wx_apikey"));
+        assertEquals("harness-project", value("aisqltkt.wx_projectid"));
     }
 
     /**
@@ -226,13 +226,13 @@ final class WatsonxTest extends ToolkitTest {
     @DisplayName("ShouldGetNewToken follows the bearer-token lifecycle")
     void tokenLifecycle() throws SQLException {
         call("wx_logoutJob()");
-        assertEquals("Y", value("dbsdk_v1.wx_ShouldGetNewToken()"), "after logout");
+        assertEquals("Y", value("aisqltkt.wx_ShouldGetNewToken()"), "after logout");
         call("wx_SetBearerTokenForJob(" + STR + ", " + INT + ")", "harness-token", Integer.valueOf(3600));
-        assertEquals("N", value("dbsdk_v1.wx_ShouldGetNewToken()"), "with a token valid for an hour");
-        assertEquals("harness-token", value("dbsdk_v1.wx_JobBearerToken"));
+        assertEquals("N", value("aisqltkt.wx_ShouldGetNewToken()"), "with a token valid for an hour");
+        assertEquals("harness-token", value("aisqltkt.wx_JobBearerToken"));
         call("wx_SetBearerTokenForJob(" + STR + ", " + INT + ")", "short-token", Integer.valueOf(30));
-        assertEquals("Y", value("dbsdk_v1.wx_ShouldGetNewToken()"), "a token expiring within the 60-second margin");
+        assertEquals("Y", value("aisqltkt.wx_ShouldGetNewToken()"), "a token expiring within the 60-second margin");
         call("wx_logoutJob()");
-        assertEquals("Y", value("dbsdk_v1.wx_ShouldGetNewToken()"), "after logging out again");
+        assertEquals("Y", value("aisqltkt.wx_ShouldGetNewToken()"), "after logging out again");
     }
 }

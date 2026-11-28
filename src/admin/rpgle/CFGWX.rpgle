@@ -5,7 +5,7 @@
 // Purpose: WatsonX configuration screen for editing user settings
 //
 // Compilation:
-//   CRTBNDRPG PGM(DBSDK_V1/CFGWX) +
+//   CRTBNDRPG PGM(AISQLTKT/CFGWX) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGWX.rpgle') +
 //             DFTACTGRP(*NO) +
 //             ACTGRP(*NEW) +
@@ -66,7 +66,7 @@ Dow Not Exit;
     Exec SQL
       SELECT USRPRF
       INTO :UsrPrf
-      FROM DBSDK_V1.CONF
+      FROM AISQLTKT.CONF
       WHERE USRPRF = :UsrPrf;
     
     If SQLCODE <> 0;
@@ -111,7 +111,7 @@ Dcl-Proc LoadConfiguration;
          :WxApiVer,
          :WxApiKey,
          :WxProjId
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrf;
   
   If SQLCODE <> 0;
@@ -125,7 +125,7 @@ End-Proc;
 Dcl-Proc SaveConfiguration;
   // Call SQL procedure to update configuration
   Exec SQL
-    CALL DBSDK_V1.CONF_UPDATE_WATSONX(
+    CALL AISQLTKT.CONF_UPDATE_WATSONX(
       :UsrPrf,
       :WxRegion,
       :WxApiVer,

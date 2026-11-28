@@ -8,8 +8,8 @@
 # Usage: ./build.sh
 #
 # Prerequisites:
-#   - DBSDK_V1 library must exist
-#   - User must have authority to create objects in DBSDK_V1
+#   - AISQLTKT library must exist
+#   - User must have authority to create objects in AISQLTKT
 #   - IBM i commands must be available (cl command)
 #
 # Author: AI-SDK-Db2-IBMi Project
@@ -122,7 +122,7 @@ for dspf in "${DISPLAY_FILES[@]}"; do
     fi
     
     # Compile display file with GENLVL(30) to allow warnings
-    cl "CRTDSPF FILE(DBSDK_V1/${dspf}) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(${dspf}) GENLVL(30)" 2>&1 > /dev/null
+    cl "CRTDSPF FILE(AISQLTKT/${dspf}) SRCFILE(JWOEHR/QDDSSRC) SRCMBR(${dspf}) GENLVL(30)" 2>&1 > /dev/null
     
     if [ $? -eq 0 ]; then
         print_success "${dspf} compiled successfully"
@@ -139,7 +139,7 @@ echo ""
 
 print_header "Step 3: Compiling RPGLE Programs"
 
-cl "ADDLIBLE DBSDK_V1" 2>&1 > /dev/null
+cl "ADDLIBLE AISQLTKT" 2>&1 > /dev/null
 
 # Array of RPGLE programs
 RPGLE_PROGRAMS=(
@@ -160,9 +160,9 @@ for pgm in "${RPGLE_PROGRAMS[@]}"; do
     # CVTCCSID(*JOB) required for UTF-8 (1208) source files
     # SQLPATH(*LIBL) uses library list to find SQL procedures
     # INCDIR specifies library for external file descriptions
-    # DFTRDBCOL(DBSDK_V1) sets default collection for unqualified SQL names
-    # CURLIB(DBSDK_V1) sets current library for this compile job
-    cl "CRTSQLRPGI OBJ(DBSDK_V1/${pgm}) SRCSTMF('${BASE_DIR}/rpgle/${pgm}.rpgle') COMMIT(*NONE) DBGVIEW(*SOURCE) COMPILEOPT('DFTACTGRP(*NO) ACTGRP(*NEW) TGTCCSID(*JOB)') USRPRF(*OWNER) RDB(*LOCAL) DFTRDBCOL(DBSDK_V1) CVTCCSID(*JOB) SQLPATH(*LIBL)" 2>&1 > /dev/null
+    # DFTRDBCOL(AISQLTKT) sets default collection for unqualified SQL names
+    # CURLIB(AISQLTKT) sets current library for this compile job
+    cl "CRTSQLRPGI OBJ(AISQLTKT/${pgm}) SRCSTMF('${BASE_DIR}/rpgle/${pgm}.rpgle') COMMIT(*NONE) DBGVIEW(*SOURCE) COMPILEOPT('DFTACTGRP(*NO) ACTGRP(*NEW) TGTCCSID(*JOB)') USRPRF(*OWNER) RDB(*LOCAL) DFTRDBCOL(AISQLTKT) CVTCCSID(*JOB) SQLPATH(*LIBL)" 2>&1 > /dev/null
     
     if [ $? -eq 0 ]; then
         print_success "${pgm} compiled successfully"
@@ -182,10 +182,10 @@ print_header "Build Summary"
 if [ $ERRORS -eq 0 ]; then
     echo -e "${GREEN}✓ Build completed successfully!${NC}"
     echo ""
-    echo "All components have been compiled to library DBSDK_V1"
+    echo "All components have been compiled to library AISQLTKT"
     echo ""
     echo "To start the application, run:"
-    echo "  CALL PGM(DBSDK_V1/CFGMENU)"
+    echo "  CALL PGM(AISQLTKT/CFGMENU)"
     echo ""
 else
     echo -e "${RED}✗ Build completed with ${ERRORS} error(s)${NC}"

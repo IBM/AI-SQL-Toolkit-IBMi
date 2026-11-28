@@ -9,7 +9,7 @@ sidebar:
 ### Publish a message 
 Then at some future time (even a different session):
 ```sql
-values(dbsdk_v1.kafka_publish( TOPIC   => 'fun_facts',
+values(aisqltkt.kafka_publish( TOPIC   => 'fun_facts',
                               KEY     => 'baritone43', 
                               MSGDATA => 'The baritone is a very interesting musical instrument!'));
 ```
@@ -17,19 +17,19 @@ values(dbsdk_v1.kafka_publish( TOPIC   => 'fun_facts',
 ### Publish a message with a per-job topic
 Then at some future time (even a different session):
 ```sql
-call dbsdk_v1.kafka_settopicforjob('fun_facts');
-values(dbsdk_v1.kafka_publish( KEY     => 'baritone43', 
+call aisqltkt.kafka_settopicforjob('fun_facts');
+values(aisqltkt.kafka_publish( KEY     => 'baritone43', 
                               MSGDATA => 'The baritone is a very interesting musical instrument!'));
 ```
 
 ### Publish a message with a persistent topic
 call once:
 ```sql
-call dbsdk_v1.kafka_settopicforme('fun_facts');
+call aisqltkt.kafka_settopicforme('fun_facts');
 ```
 
 Then at some future time (even a different session):
 ```sql
-values(dbsdk_v1.kafka_publish( KEY     => 'baritone43', 
+values(aisqltkt.kafka_publish( KEY     => 'baritone43', 
                               MSGDATA => 'The baritone is a very interesting musical instrument!'));
 ```

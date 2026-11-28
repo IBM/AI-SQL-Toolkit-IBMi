@@ -1,5 +1,5 @@
-alter table dbsdk_v1.CONF activate row access control;
-CREATE or replace PERMISSION dbsdk_v1.MYROWONLY ON dbsdk_v1.CONF FOR ROWS 
+alter table aisqltkt.CONF activate row access control;
+CREATE or replace PERMISSION aisqltkt.MYROWONLY ON aisqltkt.CONF FOR ROWS 
 WHERE USRPRF = CURRENT_USER 
-   OR CURRENT_USER IN ('DBSDK_V1')
+   OR CURRENT_USER IN ('AISQLTKT')
 ENFORCED FOR ALL ACCESS ENABLE;

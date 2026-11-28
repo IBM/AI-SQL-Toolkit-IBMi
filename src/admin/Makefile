@@ -17,8 +17,8 @@
 #                  Example: make VERBOSE=1
 #
 # Prerequisites:
-#   - DBSDK_V1 library must exist
-#   - User must have authority to create objects in DBSDK_V1
+#   - AISQLTKT library must exist
+#   - User must have authority to create objects in AISQLTKT
 #   - IBM i commands must be available (system, cl)
 #
 # Author: AI-SDK-Db2-IBMi Project
@@ -47,7 +47,7 @@ NC      := \033[0m
 BASE_DIR := $(shell pwd)
 
 # Target library
-TARGET_LIB := DBSDK_V1
+TARGET_LIB := AISQLTKT
 SOURCE_LIB := JWOEHR
 
 # SQL procedure files

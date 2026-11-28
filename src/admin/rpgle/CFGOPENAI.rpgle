@@ -5,7 +5,7 @@
 // Purpose: OpenAI Compatible configuration screen for editing user settings
 //
 // Compilation:
-//   CRTBNDRPG PGM(DBSDK_V1/CFGOPENAI) +
+//   CRTBNDRPG PGM(AISQLTKT/CFGOPENAI) +
 //             SRCSTMF('/home/jwoehr/work/AI/AI-SQL-Toolkit/AI-SDK-Db2-IBMi/src/admin/rpgle/CFGOPENAI.rpgle') +
 //             DFTACTGRP(*NO) +
 //             ACTGRP(*NEW) +
@@ -68,7 +68,7 @@ Dow Not Exit;
     Exec SQL
       SELECT USRPRF
       INTO :UsrPrf
-      FROM DBSDK_V1.CONF
+      FROM AISQLTKT.CONF
       WHERE USRPRF = :UsrPrf;
     
     If SQLCODE <> 0;
@@ -117,7 +117,7 @@ Dcl-Proc LoadConfiguration;
          :OaModel,
          :FullApiKey,
          :FullBasePath
-    FROM DBSDK_V1.CONF
+    FROM AISQLTKT.CONF
     WHERE USRPRF = :UsrPrf;
   
   If SQLCODE = 0;
@@ -150,7 +150,7 @@ Dcl-Proc SaveConfiguration;
   
   // Call SQL procedure to update configuration
   Exec SQL
-    CALL DBSDK_V1.CONF_UPDATE_OPENAI(
+    CALL AISQLTKT.CONF_UPDATE_OPENAI(
       :UsrPrf,
       :OaProtoc,
       :OaServer,

@@ -22,17 +22,17 @@
 --
 -- **Return value:**
 -- - The base URL without a trailing `/`. Defaults to `https://iam.cloud.ibm.com`.
-create or replace function dbsdk_v1.wx_GetIamBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
+create or replace function aisqltkt.wx_GetIamBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
   returns varchar(1000) ccsid 1208
   reads sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
   set returnval = baseurl;
   if (returnval is null) then
-    set returnval = dbsdk_v1.wx_iam_baseurl;
+    set returnval = aisqltkt.wx_iam_baseurl;
   end if;
   if (returnval is null) then
-    set returnval = (select watsonx_iam_baseurl from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+    set returnval = (select watsonx_iam_baseurl from aisqltkt.conf where USRPRF = CURRENT_USER);
   end if;
   if (returnval is null or trim(returnval) = '') then
     set returnval = 'https://iam.cloud.ibm.com';
@@ -47,11 +47,11 @@ end;
 -- **Input parameters:**
 -- - `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the job
 --   setting, so the user profile setting or the default applies.
-create or replace procedure dbsdk_v1.wx_SetIamBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.wx_SetIamBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_iam_baseurl = baseurl;
+  set aisqltkt.wx_iam_baseurl = baseurl;
 end;
 
 -- #### **Procedure:** `wx_SetIamBaseUrlForMe`
@@ -62,11 +62,11 @@ end;
 -- **Input parameters:**
 -- - `BASEURL` (required): The base URL, e.g. `https://iam.cloud.ibm.com`. NULL clears the user
 --   profile setting, so the default applies.
-create or replace procedure dbsdk_v1.wx_SetIamBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.wx_SetIamBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
   modifies sql data
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, baseurl AS watsonx_iam_baseurl
       FROM sysibm.sysdummy1
   ) live
@@ -89,21 +89,21 @@ end;
 --
 -- **Return value:**
 -- - The base URL without a trailing `/`. Defaults to `https://<region>.ml.cloud.ibm.com`, where
---   `<region>` is the value of `dbsdk_v1.wx_region`.
-create or replace function dbsdk_v1.wx_GetMlBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
+--   `<region>` is the value of `aisqltkt.wx_region`.
+create or replace function aisqltkt.wx_GetMlBaseUrl(baseurl varchar(1000) ccsid 1208 default NULL)
   returns varchar(1000) ccsid 1208
   reads sql data
 begin
   declare returnval varchar(1000) ccsid 1208;
   set returnval = baseurl;
   if (returnval is null) then
-    set returnval = dbsdk_v1.wx_ml_baseurl;
+    set returnval = aisqltkt.wx_ml_baseurl;
   end if;
   if (returnval is null) then
-    set returnval = (select watsonx_ml_baseurl from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+    set returnval = (select watsonx_ml_baseurl from aisqltkt.conf where USRPRF = CURRENT_USER);
   end if;
   if (returnval is null or trim(returnval) = '') then
-    set returnval = 'https://' concat dbsdk_v1.wx_region concat '.ml.cloud.ibm.com';
+    set returnval = 'https://' concat aisqltkt.wx_region concat '.ml.cloud.ibm.com';
   end if;
   return rtrim(trim(returnval), '/');
 end;
@@ -115,11 +115,11 @@ end;
 -- **Input parameters:**
 -- - `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the job
 --   setting, so the user profile setting or the default applies.
-create or replace procedure dbsdk_v1.wx_SetMlBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.wx_SetMlBaseUrlForJob(baseurl varchar(1000) ccsid 1208 default NULL)
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_ml_baseurl = baseurl;
+  set aisqltkt.wx_ml_baseurl = baseurl;
 end;
 
 -- #### **Procedure:** `wx_SetMlBaseUrlForMe`
@@ -130,11 +130,11 @@ end;
 -- **Input parameters:**
 -- - `BASEURL` (required): The base URL, e.g. `https://us-south.ml.cloud.ibm.com`. NULL clears the user
 --   profile setting, so the default applies.
-create or replace procedure dbsdk_v1.wx_SetMlBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
+create or replace procedure aisqltkt.wx_SetMlBaseUrlForMe(baseurl varchar(1000) ccsid 1208 default NULL)
   modifies sql data
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  MERGE INTO dbsdk_v1.conf tt USING (
+  MERGE INTO aisqltkt.conf tt USING (
     SELECT CURRENT_USER AS usrprf, baseurl AS watsonx_ml_baseurl
       FROM sysibm.sysdummy1
   ) live
@@ -144,18 +144,18 @@ begin
   WHEN MATCHED THEN UPDATE SET watsonx_ml_baseurl = live.watsonx_ml_baseurl;
 end;
 
-create or replace function dbsdk_v1.GetUrl(route varchar(1000))
+create or replace function aisqltkt.GetUrl(route varchar(1000))
   returns varchar(2048) ccsid 1208
   reads sql data
 begin
   declare finalUrl varchar(2048) ccsid 1208;
   declare apiVersion varchar(10) ccsid 1208;
 
-  set finalUrl = dbsdk_v1.wx_GetMlBaseUrl() concat '/ml/v1' concat route;
+  set finalUrl = aisqltkt.wx_GetMlBaseUrl() concat '/ml/v1' concat route;
 
-  set apiVersion = dbsdk_v1.wx_apiVersion;
+  set apiVersion = aisqltkt.wx_apiVersion;
   if (apiVersion is null) then
-    set apiVersion = (select watsonx_apiVersion from dbsdk_v1.conf where USRPRF = CURRENT_USER);
+    set apiVersion = (select watsonx_apiVersion from aisqltkt.conf where USRPRF = CURRENT_USER);
   end if;
   if (apiVersion is null or trim(apiVersion) = '') then
     set apiVersion = '2023-07-07';
@@ -172,11 +172,11 @@ end;
 -- 
 -- **Input parameters:**
 -- - `APIKEY` (required): The API key.
-create or replace procedure dbsdk_v1.wx_SetApiKeyForJob(apikey varchar(100))
+create or replace procedure aisqltkt.wx_SetApiKeyForJob(apikey varchar(100))
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_apikey = apikey;
+  set aisqltkt.wx_apikey = apikey;
 end;
 
 -- #### **Function:** `watsonx_SetProjectIdForJob`
@@ -185,33 +185,33 @@ end;
 -- 
 -- **Input parameters:**
 -- - `PROJECTID` (required): The project ID.
-create or replace procedure dbsdk_v1.wx_SetProjectIdForJob(projectid varchar(100))
+create or replace procedure aisqltkt.wx_SetProjectIdForJob(projectid varchar(100))
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_projectid = projectid;
+  set aisqltkt.wx_projectid = projectid;
 end;
 
-create or replace procedure dbsdk_v1.wx_SetBearerTokenForJob(bearer_token varchar(10000), expires integer)
+create or replace procedure aisqltkt.wx_SetBearerTokenForJob(bearer_token varchar(10000), expires integer)
   modifies sql data
   program type sub
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_JobBearerToken = bearer_token;
+  set aisqltkt.wx_JobBearerToken = bearer_token;
   -- We subtract 60 seconds from the expiration time to ensure we don't cut it too close
-  set dbsdk_v1.wx_JobTokenExpires = current timestamp + expires seconds - 60 seconds;
+  set aisqltkt.wx_JobTokenExpires = current timestamp + expires seconds - 60 seconds;
 end;
 
-create or replace function dbsdk_v1.wx_ShouldGetNewToken() 
+create or replace function aisqltkt.wx_ShouldGetNewToken() 
   returns char(1)
 begin
-  if (dbsdk_v1.wx_JobBearerToken is null) then
+  if (aisqltkt.wx_JobBearerToken is null) then
     return 'Y';
   end if;
-  if (dbsdk_v1.wx_JobTokenExpires is null) then
+  if (aisqltkt.wx_JobTokenExpires is null) then
     return 'Y';
   end if;
-  if (current timestamp > dbsdk_v1.wx_JobTokenExpires) then
+  if (current timestamp > aisqltkt.wx_JobTokenExpires) then
     return 'Y';
   end if;
   return 'N';
@@ -221,16 +221,16 @@ end;
 -- 
 -- **Description:** Log out from teh current job.
 -- 
-create or replace procedure dbsdk_v1.wx_logoutJob()
+create or replace procedure aisqltkt.wx_logoutJob()
   program type sub
   modifies sql data
   set option usrprf = *user, dynusrprf = *user, commit = *none
 begin
-  set dbsdk_v1.wx_JobBearerToken = null;
-  set dbsdk_v1.wx_JobTokenExpires = null;
+  set aisqltkt.wx_JobBearerToken = null;
+  set aisqltkt.wx_JobTokenExpires = null;
 end;
 
-create or replace function dbsdk_v1.parameters(
+create or replace function aisqltkt.parameters(
   decoding_method varchar(20) default null,
   temperature numeric(1, 1) default null,
   time_limit integer default null,

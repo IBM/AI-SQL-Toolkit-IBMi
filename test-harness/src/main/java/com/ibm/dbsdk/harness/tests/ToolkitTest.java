@@ -144,7 +144,7 @@ abstract class ToolkitTest {
     }
 
     /**
-     * Run {@code CALL dbsdk_v1.<procedure>}.
+     * Run {@code CALL aisqltkt.<procedure>}.
      *
      * @param _procedureCall
      *            the procedure and its argument list, e.g. {@code ollama_setportforjob(cast(? as integer))}
@@ -154,7 +154,7 @@ abstract class ToolkitTest {
      *             if the call fails
      */
     void call(final String _procedureCall, final Object... _params) throws SQLException {
-        m_db.execute("call dbsdk_v1." + _procedureCall, _params);
+        m_db.execute("call aisqltkt." + _procedureCall, _params);
     }
 
     /**

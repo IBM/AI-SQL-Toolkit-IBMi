@@ -20,7 +20,7 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsServer;
 
 /**
- * Mock server for the AI-SDK-Db2-IBMi (dbsdk_v1) toolkit. Uses only the JDK's built-in {@code com.sun.net.httpserver} so it runs on any Java 8+ runtime, including IBM i.
+ * Mock server for the AI-SDK-Db2-IBMi (aisqltkt) toolkit. Uses only the JDK's built-in {@code com.sun.net.httpserver} so it runs on any Java 8+ runtime, including IBM i.
  */
 public final class MockServer {
 

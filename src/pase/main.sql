@@ -13,7 +13,7 @@
 -- 
 -- **Return value:**
 -- - The PASE command's standard output stream. The command's standard error stream is ignored.
-create or replace function dbsdk_v1.pase_call(fullcmd varchar(1000) ccsid 1208) 
+create or replace function aisqltkt.pase_call(fullcmd varchar(1000) ccsid 1208) 
   RETURNS TABLE(output VARCHAR(32000) ccsid 1208 )
   modifies sql data
   not deterministic

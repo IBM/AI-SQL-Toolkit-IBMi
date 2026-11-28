@@ -64,7 +64,7 @@ final class OpenAiChatTest extends ToolkitTest {
     @Test
     @DisplayName("api_key argument is sent as a Bearer token")
     void apiKeyArgumentIsSentAsBearerToken() throws Exception {
-        clobValue("dbsdk_v1.openai_compatible_chat_generate(" + STR + ", " + STR + ", " + STR + ")", "Hello", "{}", "explicit-key");
+        clobValue("aisqltkt.openai_compatible_chat_generate(" + STR + ", " + STR + ", " + STR + ")", "Hello", "{}", "explicit-key");
         assertEquals("Bearer ****", MockClient.header(lastRequest("openai"), "Authorization"));
     }
 
@@ -77,13 +77,13 @@ final class OpenAiChatTest extends ToolkitTest {
     @Test
     @DisplayName("base_url argument overrides the job's endpoint settings")
     void baseUrlArgumentOverridesJobSettings() throws Exception {
-        final String reply = clobValue("dbsdk_v1.openai_compatible_chat_generate(" + STR + ", " + STR + ", " + STR + ", " + STR + ")", "Hi", "{}", null, mockBaseUrl() + "/v1beta/openai");
+        final String reply = clobValue("aisqltkt.openai_compatible_chat_generate(" + STR + ", " + STR + ", " + STR + ", " + STR + ")", "Hi", "{}", null, mockBaseUrl() + "/v1beta/openai");
         assertEquals("Mock chat response from " + MODEL + ": Hi", reply);
         assertEquals("/v1beta/openai/chat/completions", lastRequest("openai").path("path").asText());
     }
 
     private String chat(final String _prompt, final String _options) throws SQLException {
-        return clobValue("dbsdk_v1.openai_compatible_chat_generate(" + STR + ", " + STR + ")", _prompt, _options);
+        return clobValue("aisqltkt.openai_compatible_chat_generate(" + STR + ", " + STR + ")", _prompt, _options);
     }
 
     /**
